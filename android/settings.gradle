@@ -1,0 +1,3 @@
+rootProject.name = 'whistStats'
+
+include ':app'
