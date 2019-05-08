@@ -17,8 +17,19 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+async function fetchPlayers() {
+  const response = await fetch('http://localhost:3000/Players');
+  console.error('HI DAN')
+  const players = await response.json();
+  console.warn("hello" + players);
+  return players
+  // postsStore.setPosts(posts);
+}
+
+
 type Props = {};
 export default class App extends Component<Props> {
+
   render() {
     return (
       <View flex center bg-red80 padding-10 margin-20>

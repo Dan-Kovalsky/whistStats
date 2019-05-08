@@ -5,13 +5,15 @@
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest",
-    "android": "cd ./android && ./gradlew app:assembleDebug && ./gradlew installDebug"
+    "android": "cd ./android && ./gradlew app:assembleDebug && ./gradlew installDebug",
+    "fake-server": "json-server --watch db.json"
   },
   "dependencies": {
     "react": "16.8.3",
     "react-native": "0.59.5",
     "react-native-navigation": "2.18.5",
-    "react-native-ui-lib": "^3.24.3"
+    "react-native-ui-lib": "^3.24.3",
+    "remx": "^2.0.51"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
