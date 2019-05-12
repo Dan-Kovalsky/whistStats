@@ -12,6 +12,10 @@ import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.react.NavigationReactNativeHost;
 import com.reactnativenavigation.react.ReactGateway;
 
+import com.wix.reactnativeuilib.highlighterview.HighlighterViewPackage;
+import com.wix.reactnativeuilib.textinput.TextInputDelKeyHandlerPackage;
+import com.wix.reactnativeuilib.wheelpicker.WheelPickerPackage;
+
 import java.util.Arrays;
 import java.util.List;
 public class MainApplication extends NavigationApplication {
@@ -36,6 +40,9 @@ public class MainApplication extends NavigationApplication {
     // Add additional packages you require here
     // No need to add RnnPackage and MainReactPackage
     return Arrays.<ReactPackage>asList(
+            new HighlighterViewPackage(),
+            new TextInputDelKeyHandlerPackage(),
+            new WheelPickerPackage()
                         // eg. new VectorIconsPackage()
     );
   }

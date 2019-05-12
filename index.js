@@ -3,15 +3,28 @@
  */
 
 import { Navigation } from "react-native-navigation";
-import App from './App';
+import {registerScreens} from './src/screens.js';
 
-Navigation.registerComponent(`navigation.playground.WelcomeScreen`, () => App);
+registerScreens();
 
 Navigation.events().registerAppLaunchedListener(() => {
     Navigation.setRoot({
         root: {
-            component: {
-                name: "navigation.playground.WelcomeScreen"
+            stack: {
+                children: [
+                    {
+                        component: {
+                            name: 'whistStats.NewGameScreen',
+                            options: {
+                                topBar: {
+                                    title: {
+                                        text: 'New Game Screen'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
             }
         }
     });
