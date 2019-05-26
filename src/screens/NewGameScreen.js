@@ -1,11 +1,16 @@
 import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
-import {Text, View, TextField, Colors,TextArea} from 'react-native-ui-lib';
+import {Text, View, TextField, Colors,TextArea, Image} from 'react-native-ui-lib';
 
 import NameInput from './../components/NameInput'
+import NameLabel from '../components/Bidding/NameLabel'
+import BiddingButtons from '../components/Bidding/BiddingButtons'
+import BiddingComponent from '../components/Bidding/BiddingComponent'
 
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
+import BidBtn from "../components/Bidding/BidBtn";
+import RoundTrump from "../components/Bidding/RoundTrump";
 
 class NewGameScreen extends Component {
 
@@ -24,7 +29,7 @@ class NewGameScreen extends Component {
                 eastName: '',
                 westName: ''
             }
-        }
+        };
 
         Navigation.events().bindComponent(this);
 
@@ -37,14 +42,8 @@ class NewGameScreen extends Component {
             component: {
                 name: 'whistStats.RoundScreen',
                 passProps: {
-                    somePropToPass: 'Some props that we are passing - all the names'
-                },
-                options: {
-                    topBar: {
-                        title: {
-                            text: 'To Be Static'
-                        }
-                    }
+                    somePropToPass: 'Some props that we are passing - all the names',
+                    allNames: this.state.names
                 }
             }
         });
@@ -57,7 +56,7 @@ class NewGameScreen extends Component {
                     {
                         id: 'roundScreen',
                         text: 'Start',
-                        enabled: false
+                        enabled: !false     //TODO DELETE '!'
                     }
                 ]
             }
@@ -69,7 +68,8 @@ class NewGameScreen extends Component {
     }
 
     onNChanged = name => {
-        this.setState({...this.state.names, names:{...this.state.names, northName: name}})
+        this.setState({names:{...this.state.names, northName: name}})
+        // this.setState({...this.state.names, names:{...this.state.names, northName: name}})
         this.enableStartBtn(name)
 
     }
@@ -101,8 +101,6 @@ class NewGameScreen extends Component {
         });
     }
 
-    isAllNamesFill = () => !!this.state.names.northName && !!this.state.names.southName &&  !!this.state.names.eastName &&  !!this.state.names.westName;
-
 
 
     render() {
@@ -116,43 +114,20 @@ class NewGameScreen extends Component {
                     </View>
                     <NameInput position='south' onChangeText={this.onSChanged}/>
                 </View>
-                <View row flex bg-blue30>
+                {/*<View flex center bg-blue30>*/}
+                {/*    /!*<BiddingComponent name={this.state.names.northName}/>*!/*/}
+                {/*    /!*<OneBtn num={6}/>*!/*/}
+                {/*    /!*<BiddingButtons/>*!/*/}
+                {/*    /!*<NameLabel name={this.state.names.northName}/>*!/*/}
+                {/*    <RoundTrump trump='diamonds'/>*/}
 
-                </View>
-                {/*<View flex-1 bg-red10></View>*/}
-
-                {/*<Text onPress={this.pushRoundScreen}>NewGameScreen</Text>*/}
-                {/*<Text onPress={this.pushRoundScreen}>NewGameScreen</Text>*/}
-                {/*<Text onPress={this.pushRoundScreen}>NewGameScreen</Text>*/}
-                {/*<View>*/}
-                {/*    <TextField text50 onChangeText={this.onChangeText} title='north0'/>*/}
-                {/*    <TextField onChangeText={this.onChangeText} title='north1'/>*/}
-                {/*    <TextField text10 onChangeText={this.onChangeText} title='north2'/>*/}
                 {/*</View>*/}
 
-                {/*<Input10 onChangeText={this.onChangeText}/>*/}
-                {/*<Input10 onChangeText={this.onChangeText}/>*/}
-                {/*<Input10 onChangeText={this.onChangeText}/>*/}
-                {/*<Input10 onChangeText={this.onChangeText}/>*/}
+
             </View>
         );
     }
-
-
 }
 
 export default NewGameScreen;
 
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         backgroundColor: '#D3EDFF',
-//     },
-//     text: {
-//         fontSize: 28,
-//         textAlign: 'center',
-//         margin: 10,
-//     }
-// });

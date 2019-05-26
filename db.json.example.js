@@ -1,8 +1,11 @@
+import {whistStore} from "./src/stores/allGamesStore";
+
+const whistGame =
 {
   "games": [
     {
       "date": "11/11/2011",
-      "gameId": 0,
+      "gameId": "game1",
       "Players": [
         {
           "playerId": "304957913",
@@ -45,7 +48,7 @@
 
     {
       "date": "12/12/2022",
-      "gameId": 1,
+      "gameId": "game2",
       "Players": [
         {
           "playerId": "304957913",
@@ -84,7 +87,11 @@
           ]
         }
       ]
-    },
+    }
+  ]
+}
 
-  }
+export function fetchWhistGame() {
+  whistStore.setFakeWhistGame(whistGame)
+
 }
