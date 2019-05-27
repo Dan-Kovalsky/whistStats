@@ -6,6 +6,14 @@ import PropTypes from 'prop-types'
 
 export default class BiddingButtons extends Component {
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            textVal:""
+        };
+    }
+
 
     static propTypes = {
         location: PropTypes.string,
@@ -13,6 +21,17 @@ export default class BiddingButtons extends Component {
         bid: PropTypes.number
     };
 
+    bgColor = () => {
+        if (this.props.bid > 6 && this.props.bid < 14) {
+            return Colors.orange50;
+        }
+        return Colors.orange60;
+    };
+
+    onChangeText = (text) => {
+        this.setState({textVal:text})
+        this.props.whenBidBtnPressed(this.props.location, text)
+    }
 
     render(){
         return (
@@ -27,10 +46,10 @@ export default class BiddingButtons extends Component {
                 <TextField
                     centered
                     text90
-                    containerStyle={{height:40, width:25, backgroundColor: Colors.orange60}}
-                    placeholder={'^'}
-                    onChangeText={this.props.onChangeText}
-
+                    containerStyle={{height:40, width:25, backgroundColor: this.bgColor()}}
+                    placeholder={'*'}
+                    value={this.state.textVal}
+                    onChangeText={this.onChangeText}
                 />
             </View>
         )
