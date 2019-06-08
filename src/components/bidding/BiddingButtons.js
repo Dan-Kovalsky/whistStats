@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
-import {Text, View, TextField,Colors, Button} from 'react-native-ui-lib';
+import {Text, View, TextField, Colors, Button} from 'react-native-ui-lib';
 import BidBtn from "./BidBtn";
 import PropTypes from 'prop-types'
+import {BID_BTN_PRS_BG, BID_BTN_UN_PRS_BG} from '../../constants/Styles'
 
 export default class BiddingButtons extends Component {
 
@@ -23,14 +24,14 @@ export default class BiddingButtons extends Component {
 
     bgColor = () => {
         if (this.props.bid > 6 && this.props.bid < 14) {
-            return Colors.orange50;
+            return BID_BTN_PRS_BG;
         }
-        return Colors.orange60;
+        return BID_BTN_UN_PRS_BG;
     };
 
     onChangeText = (text) => {
         this.setState({textVal:text})
-        this.props.whenBidBtnPressed(this.props.location, text)
+        this.props.whenBidBtnPressed(this.props.location, Number(text))
     }
 
     render(){
@@ -50,6 +51,7 @@ export default class BiddingButtons extends Component {
                     placeholder={'*'}
                     value={this.state.textVal}
                     onChangeText={this.onChangeText}
+                    keyboardType={"number-pad"}
                 />
             </View>
         )

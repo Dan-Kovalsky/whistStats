@@ -12,13 +12,14 @@ export default class BiddingComponent extends Component {
         name: PropTypes.string,
         location: PropTypes.string,
         whenBidBtnPressed: PropTypes.function,
-        bid:PropTypes.number
+        bid:PropTypes.number,
+        points: PropTypes.number
     };
 
     render(){
         return (
             <View margin-10 center>
-                <NameLabel name={this.props.name}/>
+                <NameLabel name={this.props.name} points={this.props.points}/>
                 <BiddingButtons bid={this.props.bid} location={this.props.location} whenBidBtnPressed={this.props.whenBidBtnPressed}/>
             </View>
         )

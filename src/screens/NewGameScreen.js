@@ -3,14 +3,14 @@ import {StyleSheet} from 'react-native';
 import {Text, View, TextField, Colors,TextArea, Image} from 'react-native-ui-lib';
 
 import NameInput from './../components/NameInput'
-import NameLabel from '../components/Bidding/NameLabel'
-import BiddingButtons from '../components/Bidding/BiddingButtons'
-import BiddingComponent from '../components/Bidding/BiddingComponent'
+import NameLabel from '../components/bidding/NameLabel'
+import BiddingButtons from '../components/bidding/BiddingButtons'
+import BiddingComponent from '../components/bidding/BiddingComponent'
 
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
-import BidBtn from "../components/Bidding/BidBtn";
-import RoundTrump from "../components/Bidding/RoundTrump";
+import BidBtn from "../components/bidding/BidBtn";
+import RoundTrump from "../components/bidding/RoundTrump";
 
 class NewGameScreen extends Component {
 

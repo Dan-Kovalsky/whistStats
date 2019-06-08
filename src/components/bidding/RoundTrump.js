@@ -16,18 +16,14 @@ export default class RoundTrump extends Component {
 
     getTrumpLogo = () => {
         switch (this.props.trump) {
-            case ('spades'): {
+            case ('spades'):
                 return require('./../../assets/spades.png');
-            }
-            case ('hearts'): {
+            case ('hearts'):
                 return require('./../../assets/hearts.png');
-            }
-            case ('clubs'): {
+            case ('clubs'):
                 return require('./../../assets/clubs.png');
-            }
-            case ('diamonds'): {
+            case ('diamonds'):
                 return require('./../../assets/diamonds.png');
-            }
         }
     };
 
