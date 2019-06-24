@@ -1,22 +1,20 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, View, Button, Colors, Assets, RadioGroup, RadioButton,TextField} from 'react-native-ui-lib';
+// import {BackHandler} from 'react-native';
+import {View, Button, Colors, Assets} from 'react-native-ui-lib';
 
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
 import ShapeInput from '../components/bidding/ShapeInput'
-import RoundTrump from '../components/bidding/RoundTrump'
+import RoundTrump from '../components/results/RoundTrump'
 
-
-import NameInput from "../components/NameInput";
-import NameLabel from '../components/bidding/NameLabel'
 import BiddingComponent from "../components/bidding/BiddingComponent";
 import ResultsComponent from "../components/results/ResultsComponent";
 import BidInfo from "../components/bidding/BidInfo";
 import ResInfo from "../components/results/ResInfo";
-import {ZERO_UNDER_POINTS_STAND, ZERO_OVER_POINTS_STAND, ZERO_UNDER_POINTS_FAIL, POINTS_FOR_ZERO_EXTRAHAND_UNDER, ZERO_OVER_POINTS_FAIL, POINTS_FOR_ZERO_EXTRAHAND_OVER, EXTRA_POINTS_FOR_STAND, PENALTY_PER_DIFFERENCE, BONUS_POINTS_FOR_5_ROW} from './../constants/Points'
+import * as pts from './../constants/Points'
+import {ROUND_SCREEN_COLORS as clr} from "../constants/styles/Colors";
 
-
+let roundsHistory = [];
 
 class RoundScreen extends Component {
 
@@ -26,10 +24,9 @@ class RoundScreen extends Component {
         allNames: PropTypes.object
     };
 
+
     constructor(props) {
         super(props);
-
-        // this.state = this.initiateNewBidState();
 
         this.state = {
             roundNumber: 1,
@@ -55,29 +52,77 @@ class RoundScreen extends Component {
                 west: 0,
                 east: 0
             },
-            upDown:-13
+            upDown:-13,
+            isStand: {
+                north: true,
+                south: true,
+                west: true,
+                east: true
+            },
+            curSequence: {
+                north: 0,
+                south: 0,
+                west: 0,
+                east: 0
+            },
+            didBet: {
+                north: false,
+                south: false,
+                west: false,
+                east: false
+            },
+            isRoundFail: false,
         };
 
         Navigation.events().bindComponent(this);
+        // this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
 
-        this.pushTableScreen = this.pushTableScreen.bind(this);
+
     }
 
-    pushTableScreen() {
+    // onNavigatorEvent(event) {
+    //     switch (event.id) {
+    //         case 'willAppear':
+    //             this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    //             break;
+    //         case 'willDisappear':
+    //             this.backPressed = 0;
+    //             this.backHandler.remove();
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
+    // handleBackPress = () => {
+    //     if (this.backPressed && this.backPressed > 0) {
+    //         this.props.navigator.popToRoot({ animated: false });
+    //         return false;
+    //     }
+    //
+    //     this.backPressed = 1;
+    //     this.props.navigator.showSnackbar({
+    //         text: 'Press one more time to exit',
+    //         duration: 'long',
+    //     });
+    //     return true;
+    // }
+
+    pushTableScreen = () => {
         Navigation.showModal({
             stack: {
                 children: [{
                     component: {
                         name: 'whistStats.TableScreen',
                         passProps: {
-                            somePropToPass: 'Some props - Table from DB'
+                            somePropToPass: 'Some props - Table from DB',
+                            roundsHistory: roundsHistory,
+                            allNames: this.props.allNames
                         }
                     }
                 }]
             }
         });
     }
-
 
     static get options() {
         return {
@@ -95,20 +140,35 @@ class RoundScreen extends Component {
                     }
                 ],
                 title: {
-                    text: `Round 1 Bidding`
+                    text: `Round 1 Biddings`
                 }
             }
         };
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot){
+    // componentDidAppear() {
+    //     console.log("componentDidAppear")
+    // }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.state.bid_notRes !== prevState.bid_notRes) {           //Change Title Only when we change state of bid_notRes
-            this.changeScreenTitle();
+            // this.updateRow5()
+            // this.changeScreenTitle();
             if (this.state.bid_notRes) {        // We Finished Round
-                this.uploadResults()
+                // roundsHistory.push({
+                //     roundNumber: this.state.roundNumber,
+                //     chosenTrump: this.state.chosenTrump,
+                //     biddings: {...this.state.biddings},
+                //     results: {...this.state.results},
+                //     points: {...this.state.points},
+                //     upDown: this.state.upDown
+                // })
+                // this.setState(this.initiateNewBidState())
+                // this.uploadResults()                            // todo change to this.pushTableScreen() and move this one up
             }
             else {                              // We finished Bidding
                 this.uploadBiddings()
+                this.changeScreenTitle();
             }
 
         }
@@ -139,7 +199,8 @@ class RoundScreen extends Component {
 
         // Call this function only after finish whole Round
     initiateNewBidState = () => {
-        const roundNum = this.state ? this.state.roundNumber + 1 : 1;
+        const roundNum = this.state.roundNumber + 1;
+        // const roundNum = this.state ? this.state.roundNumber + 1 : 1;
 
         // console.log(JSON.stringify(this.state))
         return ({
@@ -160,29 +221,67 @@ class RoundScreen extends Component {
                 west: 0,
                 east: 0
             },
-            points: this.updatePointsObject(this.state.biddings, this.state.results, this.state.points),
-            upDown: -13
+            upDown: -13,
+            didBet: {
+                north: false,
+                south: false,
+                west: false,
+                east: false
+            },
+            isRoundFail: false
         });
 
     }
 
+    updateIsStand = (biddings, results) => {
+        return (
+            {
+                north: biddings.north === results.north,
+                west: biddings.west === results.west,
+                east: biddings.east === results.east,
+                south: biddings.south === results.south
+            }
+        )
+    }
+
+    updateRoundFail = (biddings, results) => {
+        return (
+                biddings.north !== results.north &&
+                biddings.west !== results.west &&
+                biddings.east !== results.east &&
+                biddings.south !== results.south
+        )
+    }
+
+    updateSequence = (biddings, results, lastSequence) => {
+        return (
+            {
+                north: biddings.north === results.north ? lastSequence.north + 1 : 0,
+                west: biddings.west === results.west ? lastSequence.west + 1 : 0,
+                east: biddings.east === results.east ? lastSequence.east + 1 : 0,
+                south: biddings.south === results.south ? lastSequence.south + 1 : 0
+            }
+        )
+    }
+
 
     updatePointsObject = (biddings, results, points) => {
-        console.log(JSON.stringify(biddings))
-        console.log(JSON.stringify(results))
-        console.log(JSON.stringify(points))
-        return {                                                                    //todo add state of sequence
-            north: points.north+this.calcRoundPoints(biddings.north, results.north) + this.Row5Bonus(),
-            west: points.west + this.calcRoundPoints(biddings.west, results.west) + this.Row5Bonus(),
-            east: points.east + this.calcRoundPoints(biddings.east, results.east) + this.Row5Bonus(),
-            south: points.south+this.calcRoundPoints(biddings.south, results.south) + this.Row5Bonus()
+        if (this.state.isRoundFail) {
+            return points;
+        }
+        return {
+            north: points.north+this.calcRoundPoints(biddings.north, results.north) + this.Row5Bonus('north'),
+            west: points.west + this.calcRoundPoints(biddings.west, results.west) + this.Row5Bonus('west'),
+            east: points.east + this.calcRoundPoints(biddings.east, results.east) + this.Row5Bonus('east'),
+            south: points.south+this.calcRoundPoints(biddings.south, results.south) + this.Row5Bonus('south')
         }
     }
 
-    Row5Bonus = () => {
-        //TODO TODO add state of sequence
-        if (true === false) {
-            return BONUS_POINTS_FOR_5_ROW
+    Row5Bonus = (location) => {
+        const sequence = this.state.curSequence[location]
+        if (this.state.roundNumber < 4) return 0;
+        if (sequence > 0 && sequence % 5 === 0) {
+            return pts.BONUS_POINTS_FOR_5_ROW
         }
         else {
             return 0
@@ -194,125 +293,164 @@ class RoundScreen extends Component {
         const difference = Math.abs(bid - res)
         if (difference === 0) {                          //Stand
             if (bid === 0) {
-                if (this.state.sumOfBiddings < 13) {   //Under   //Todo add state of under over and sumOfBiddings
-                    return ZERO_UNDER_POINTS_STAND;
+                if (this.state.sumOfBiddings < 13) {   //Under
+                    return pts.ZERO_UNDER_POINTS_STAND;
                 }
-                return ZERO_OVER_POINTS_STAND;
+                return pts.ZERO_OVER_POINTS_STAND;
             }
             else {                                  //Over
-                return bid * bid + EXTRA_POINTS_FOR_STAND
+                return bid * bid + pts.EXTRA_POINTS_FOR_STAND
             }
         }
         else {                                      // Fail
-            console.log("differsence: "+ difference)
             if (bid === 0) {
-                if (this.state.sumOfBiddings < 13) {   //Under   //Todo add state of under over and sumOfBiddings
-                    return ZERO_UNDER_POINTS_FAIL + (difference - 1) * POINTS_FOR_ZERO_EXTRAHAND_UNDER
+                if (this.state.sumOfBiddings < 13) {   //Under
+                    return pts.ZERO_UNDER_POINTS_FAIL + (difference - 1) * pts.POINTS_FOR_ZERO_EXTRAHAND_UNDER
                 }
-                return ZERO_OVER_POINTS_FAIL + (difference - 1) * POINTS_FOR_ZERO_EXTRAHAND_OVER
+                return pts.ZERO_OVER_POINTS_FAIL + (difference - 1) * pts.POINTS_FOR_ZERO_EXTRAHAND_OVER
             }
             else
-                return PENALTY_PER_DIFFERENCE * difference
+                return pts.PENALTY_PER_DIFFERENCE * difference
         }
     }
 
     changeRoundState = () => {      // this func checks if the Button click is legal and change state if so
         if(this.state.bid_notRes){      //we are on the screen of the bidding
             if (this.state.chosenTrump !== "" && true === true) {             //todo all bids are set.
-                if (this.state.sumOfBiddings === 13) {          //todo zero it when round end
-                // if (this.calcSumOfBiddings() === 13) {          //todo zero it when round end
-                    alert('Sum of Biddings cannot be 13'); return;
+                if (this.state.didBet.north || this.state.didBet.west || this.state.didBet.east || this.state.didBet.south) {
+                    if (this.state.sumOfBiddings !== 13) {
+                        let newResultsObject = JSON.parse(JSON.stringify(this.state.biddings));
+                        this.setState({bid_notRes: false, results: newResultsObject, upDown: this.calcUpDown(), sumOfResults: this.state.sumOfBiddings});
+                    } else {
+                        alert('!! SUM 13 !!'); return;
+                    }
                 } else {
-                    let newResultsObject = JSON.parse(JSON.stringify(this.state.biddings));
-                    this.setState({bid_notRes: false, results: newResultsObject, upDown: this.calcUpDown(), sumOfResults: this.state.sumOfBiddings});
+                    alert('!! BET 5+ !!')
                 }
             } else {
-                alert('please set all biding and choose trump'); return;
+                alert('!! CHOOSE TRUMP !!'); return;
             };
         } else {                        // bid_notRes is false, so we want to end a round
-            // if (true === true) {         //todo all results are chosen
-                if(this.state.sumOfResults !== 13) {
-                    alert('Sum of results must be 13'); return;
-                    // } else
-                    // alert('please insert results for all players');
-                    // } else {
-                } else {
-                    this.setState(this.initiateNewBidState())
-                    // this.setState({bid_notRes: true, roundNumber: this.state.roundNumber + 1});
-                }
-            }
-    }
+            if(this.state.sumOfResults !== 13) {
+                alert('!! SUM NOT 13 !!'); return;
+            } else {
+                this.setState({
+                    isStand: this.updateIsStand(this.state.biddings, this.state.results),
+                    isRoundFail: this.updateRoundFail(this.state.biddings, this.state.results),
+                    curSequence: this.updateSequence(this.state.biddings, this.state.results, this.state.curSequence),
+                    bid_notRes: true
+                }, () => {
+                    this.setState({
+                        points: this.updatePointsObject(this.state.biddings, this.state.results, this.state.points)
+                    }, () => {
+                        roundsHistory.push({
+                            roundNumber: this.state.roundNumber,
+                            chosenTrump: this.state.chosenTrump,
+                            biddings: {...this.state.biddings},
+                            results: {...this.state.results},
+                            points: {...this.state.points},
+                            curSequence: {...this.state.curSequence},
+                            isStand: {...this.state.isStand},
+                            upDown: this.state.upDown,
+                            didBet: {...this.state.didBet},
+                            isRoundFail: this.state.isRoundFail
+                        });
+                        this.setState(this.initiateNewBidState(),
+                            () => this.changeScreenTitle());
+                        this.uploadResults();
 
+                    })
+                })
+            }
+        }
+    };
 
     whenShapePressed = (shapeName) => {
-        // alert("the Shape That pressed is " + shapeName)
         this.setState({chosenTrump: shapeName})
 
     }
 
-    whenBidBtnPressed = (playerLocation, numPressed) => {
+    whenBidBtnPressed = (location, numPressed) => {
         let newBiddingState = {...this.state.biddings};
-        newBiddingState[playerLocation] = numPressed;
-        let newSum = this.calcSumOfBiddings(playerLocation, numPressed)
-        this.setState({biddings: newBiddingState, sumOfBiddings: newSum})
-        // alert('The player on the '+playerLocation+' side pressed on '+numPressed+'\nsum of biddings = '+(this.calcSumOfBiddings()+numPressed-this.state.biddings[playerLocation]))
+        newBiddingState[location] = numPressed;
+        const newSum = this.calcSumOfBiddings(location, numPressed);
+        this.setState({biddings: newBiddingState, sumOfBiddings: newSum, didBet: this.checkIfBet(location, numPressed)})
 
     }
 
-    whenResBtnPressed = (playerLocation, numPressed) => {
+    whenResBtnPressed = (location, numPressed) => {
         let newResultsState = {...this.state.results};
-        newResultsState[playerLocation] = numPressed;
-        this.setState({results: newResultsState, sumOfResults: this.calcSumOfResults(playerLocation, numPressed)})
-        // alert('The player on the '+playerLocation+' side pressed on '+numPressed+'\nsum of biddings = '+(this.calcSumOfBiddings()+numPressed-this.state.biddings[playerLocation]))
+        newResultsState[location] = numPressed;
+        this.setState({results: newResultsState, sumOfResults: this.calcSumOfResults(location, numPressed)})
 
     }
 
-    // calcSumOfBiddings = () => this.state.biddings.north+this.state.biddings.west+this.state.biddings.east+this.state.biddings.south;
-    calcSumOfBiddings = (playerLocation, numPressed) => {
-        if (playerLocation === 'north') return numPressed+this.state.biddings.west+this.state.biddings.east+this.state.biddings.south;
-        else if (playerLocation === 'west') return this.state.biddings.north+numPressed+this.state.biddings.east+this.state.biddings.south;
-        else if (playerLocation === 'east') return this.state.biddings.north+this.state.biddings.west+numPressed+this.state.biddings.south;
-        else if (playerLocation === 'south') return this.state.biddings.north+this.state.biddings.west+this.state.biddings.east+numPressed;
+    checkIfBet = (location, numPressed) => {
+        let newDidBet = {...this.state.didBet}
+        if (numPressed >= 5) {
+            if (!newDidBet.north && !newDidBet.west && !newDidBet.east && !newDidBet.south) {       //Its the first one to have bid more than 5
+                newDidBet[location] = true;
+            }
+            else {
+
+            }
+        }
+        else {      // number lower than 5 pressed
+            if (newDidBet[location]) {          // previously he was the king
+                newDidBet[location] = false;
+                ['north', 'west', 'east', 'south'].forEach((value) => {
+                    if (value !== location && this.state.biddings[value] >= 5 &&        // this if takes care on the situation that someone else gets the crown if he bid more than 5
+                        !newDidBet.north && !newDidBet.west && !newDidBet.east && !newDidBet.south) {
+                        newDidBet[value] = true;
+                    }
+                })
+            }
+        }
+        return newDidBet
+    }
+
+    calcSumOfBiddings = (location, numPressed) => {
+        if (location === 'north') return numPressed+this.state.biddings.west+this.state.biddings.east+this.state.biddings.south;
+        else if (location === 'west') return this.state.biddings.north+numPressed+this.state.biddings.east+this.state.biddings.south;
+        else if (location === 'east') return this.state.biddings.north+this.state.biddings.west+numPressed+this.state.biddings.south;
+        else if (location === 'south') return this.state.biddings.north+this.state.biddings.west+this.state.biddings.east+numPressed;
     };
-    calcSumOfResults = (playerLocation, numPressed) => {
-        if (playerLocation === 'north') return numPressed + this.state.results.west + this.state.results.east + this.state.results.south;
-        else if (playerLocation === 'west') return this.state.results.north + numPressed + this.state.results.east + this.state.results.south;
-        else if (playerLocation === 'east') return this.state.results.north + this.state.results.west + numPressed + this.state.results.south;
-        else if (playerLocation === 'south') return this.state.results.north + this.state.results.west + this.state.results.east + numPressed;
+
+    calcSumOfResults = (location, numPressed) => {
+        if (location === 'north') return numPressed + this.state.results.west + this.state.results.east + this.state.results.south;
+        else if (location === 'west') return this.state.results.north + numPressed + this.state.results.east + this.state.results.south;
+        else if (location === 'east') return this.state.results.north + this.state.results.west + numPressed + this.state.results.south;
+        else if (location === 'south') return this.state.results.north + this.state.results.west + this.state.results.east + numPressed;
     }
+
     calcUpDown = () => this.state.sumOfBiddings - 13;
 
-
-
-
     render() {
-        console.log(this.state.sumOfBiddings)
         return (
-            <View flex style={{backgroundColor: '#D3ED44'}}>
+            <View flex style={{backgroundColor: clr.BG}}>
 
                 {this.state.bid_notRes ?
                     <View>
-                        <BiddingComponent points={this.state.points.north} bid={this.state.biddings.north} whenBidBtnPressed={this.whenBidBtnPressed} location={'north'} name={this.props.allNames.northName}/>
+                        <BiddingComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} whenBidBtnPressed={this.whenBidBtnPressed} location={'north'} name={this.props.allNames.northName}/>
                         <View spread row>
-                            <BiddingComponent points={this.state.points.west} bid={this.state.biddings.west} whenBidBtnPressed={this.whenBidBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
-                            <BiddingComponent points={this.state.points.east} bid={this.state.biddings.east} whenBidBtnPressed={this.whenBidBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
+                            <BiddingComponent king={this.state.didBet.west} points={this.state.points.west} bid={this.state.biddings.west} whenBidBtnPressed={this.whenBidBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
+                            <BiddingComponent king={this.state.didBet.east} points={this.state.points.east} bid={this.state.biddings.east} whenBidBtnPressed={this.whenBidBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
                         </View>
-                        <BiddingComponent points={this.state.points.south} bid={this.state.biddings.south} whenBidBtnPressed={this.whenBidBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
+                        <BiddingComponent king={this.state.didBet.south} points={this.state.points.south} bid={this.state.biddings.south} whenBidBtnPressed={this.whenBidBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
                     </View>
                     :
                     <View>
-                        <ResultsComponent points={this.state.points.north} bid={this.state.biddings.north} res={this.state.results.north} whenResBtnPressed={this.whenResBtnPressed} location={'north'} name={this.props.allNames.northName}/>
+                        <ResultsComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} res={this.state.results.north} whenResBtnPressed={this.whenResBtnPressed} location={'north'} name={this.props.allNames.northName}/>
                         <View spread row>
-                            <ResultsComponent points={this.state.points.west} bid={this.state.biddings.west} res={this.state.results.west} whenResBtnPressed={this.whenResBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
-                            <ResultsComponent points={this.state.points.east} bid={this.state.biddings.east} res={this.state.results.east} whenResBtnPressed={this.whenResBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
+                            <ResultsComponent king={this.state.didBet.west} points={this.state.points.west} bid={this.state.biddings.west} res={this.state.results.west} whenResBtnPressed={this.whenResBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
+                            <ResultsComponent king={this.state.didBet.east} points={this.state.points.east} bid={this.state.biddings.east} res={this.state.results.east} whenResBtnPressed={this.whenResBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
                         </View>
-                        <ResultsComponent points={this.state.points.south} bid={this.state.biddings.south} res={this.state.results.south} whenResBtnPressed={this.whenResBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
+                        <ResultsComponent king={this.state.didBet.south} points={this.state.points.south} bid={this.state.biddings.south} res={this.state.results.south} whenResBtnPressed={this.whenResBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
                     </View>
                 }
 
                 <View row center>
                     <BidInfo bid_notRes={this.state.bid_notRes} sumOfBiddings={this.state.sumOfBiddings} sumOfResults={this.state.sumOfResults}/>
-                    {/*{this.state.bid_notRes ? <ShapeInput/> : <RoundTrump trump={this.state.chosenTrump}/>}        */}
                     {this.state.bid_notRes ?
                         <ShapeInput chosenTrump={this.state.chosenTrump} whenShapePressed={this.whenShapePressed}></ShapeInput>
                         :
@@ -323,20 +461,18 @@ class RoundScreen extends Component {
 
                 <View centerH>
                     <Button
-                        backgroundColor={Colors.yellow20}
+                        backgroundColor={this.state.bid_notRes ? clr.START_ROUND_BTN_BG : clr.END_ROUND_BTN_BG}
+                        color={this.state.bid_notRes ? clr.START_ROUND_BTN_TEXT : clr.END_ROUND_BTN_TEXT}
                         label={this.state.bid_notRes ? `start round ${this.state.roundNumber}` : `end round ${this.state.roundNumber}`}
                         size="large"
-                        borderRadius={5}
+                        borderRadius={50}
                         text60
                         labelStyle={{fontWeight: 'bold'}}
-                        style={{width:290, height:100}}
+                        style={{width:200, height:100}}
                         // ref={element => (this.button_0 = element)}
                         onPress={() => this.changeRoundState()}
                     />
                 </View>
-
-                {/*<Text style={styles.text}>roundScreen</Text>*/}
-                {/*<Text text40 red10 marginT-30>{this.props.somePropToPass}</Text>*/}
             </View>
         );
     }

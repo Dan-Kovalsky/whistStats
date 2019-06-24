@@ -10,7 +10,8 @@ import BiddingComponent from '../components/bidding/BiddingComponent'
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
 import BidBtn from "../components/bidding/BidBtn";
-import RoundTrump from "../components/bidding/RoundTrump";
+import RoundTrump from "../components/results/RoundTrump";
+import {NEW_GAME_SCREEN_BG} from "../constants/styles/Colors";
 
 class NewGameScreen extends Component {
 
@@ -105,25 +106,12 @@ class NewGameScreen extends Component {
 
     render() {
         return (
-            <View flex>
-                <View flex center bg-cyan10>
-                    <NameInput position='north' onChangeText={this.onNChanged}/>
-                    <View row>
-                        <NameInput position='west' onChangeText={this.onWChanged}/>
-                        <NameInput position='east' onChangeText={this.onEChanged}/>
-                    </View>
-                    <NameInput position='south' onChangeText={this.onSChanged}/>
-                </View>
-                {/*<View flex center bg-blue30>*/}
-                {/*    /!*<BiddingComponent name={this.state.names.northName}/>*!/*/}
-                {/*    /!*<OneBtn num={6}/>*!/*/}
-                {/*    /!*<BiddingButtons/>*!/*/}
-                {/*    /!*<NameLabel name={this.state.names.northName}/>*!/*/}
-                {/*    <RoundTrump trump='diamonds'/>*/}
-
-                {/*</View>*/}
-
-
+            <View flex style={{backgroundColor: NEW_GAME_SCREEN_BG}}>
+                <NameInput position='north' onChangeText={this.onNChanged}/>
+                <View spread row>
+                    <NameInput position='west' onChangeText={this.onWChanged}/>
+                    <NameInput position='east' onChangeText={this.onEChanged}/></View>
+                <NameInput position='south' onChangeText={this.onSChanged}/>
             </View>
         );
     }

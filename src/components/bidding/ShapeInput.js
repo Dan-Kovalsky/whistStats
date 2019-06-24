@@ -17,56 +17,6 @@ export default class ShapeInput extends Component {
                     <ShapeBtn chosenTrump={this.props.chosenTrump} whenShapePressed={this.props.whenShapePressed} trumpEmoji={Assets.emojis.diamonds} shapeName={'diamonds'}/>
                     <ShapeBtn chosenTrump={this.props.chosenTrump} whenShapePressed={this.props.whenShapePressed} trumpEmoji={Assets.emojis.clubs} shapeName={'clubs'}/>
                 </View>
-
-                {/*    <Button style={{height:40, width:40}} onPress={() => alert('spade')}>*/}
-                {/*        <Text>*/}
-                {/*            {Assets.emojis.spades}*/}
-                {/*        </Text>*/}
-                {/*    </Button>*/}
-                {/*</View>*/}
-                {/*<View row center>*/}
-
-                {/*    <Button onPress={() => alert('heart')}>*/}
-                {/*        <Text>*/}
-                {/*            {Assets.emojis.hearts}*/}
-                {/*        </Text>*/}
-                {/*    </Button>*/}
-
-                {/*    <Button onPress={() => alert('diamond')}>*/}
-                {/*        <Text>*/}
-                {/*            {Assets.emojis.diamonds}*/}
-                {/*        </Text>*/}
-                {/*    </Button>*/}
-
-                {/*    <Button onPress={() => alert('club')}>*/}
-                {/*        <Text>*/}
-                {/*            {Assets.emojis.clubs}*/}
-                {/*        </Text>*/}
-                {/*    </Button>*/}
-
-                {/*    /!*<Button*!/*/}
-                {/*    /!*    backgroundColor={Colors.yellow30}*!/*/}
-                {/*    /!*    round*!/*/}
-                {/*    /!*    // iconSource={Assets.emojis.spades}*!/*/}
-                {/*    /!*    // label={'start round 1'}*!/*/}
-                {/*    /!*    size='medium'*!/*/}
-                {/*    /!*    borderRadius={5}*!/*/}
-                {/*    /!*    text60*!/*/}
-                {/*    /!*    labelStyle={{fontWeight: 'bold'}}*!/*/}
-                {/*    /!*    style={{width:90, height:100}}*!/*/}
-                {/*    /!*    ref={element => (this.button_0 = element)}*!/*/}
-                {/*    /!*    onPress={() => this.showSnippet(this.button_4)}*!/*/}
-                {/*    /!*>*!/*/}
-                {/*    /!*    /!*<Text>*!/*!/*/}
-                {/*    /!*    /!*    {Assets.emojis.spades}*!/*!/*/}
-                {/*    /!*    /!*</Text>*!/*!/*/}
-                {/*    /!*</Button>*!/*/}
-
-
-
-                {/*</View>*/}
-
-
             </View>
                   )
 

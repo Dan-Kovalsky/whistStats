@@ -3,7 +3,7 @@ import {StyleSheet} from 'react-native';
 import {Text, View, TextField, Colors, Button} from 'react-native-ui-lib';
 import BidBtn from "./BidBtn";
 import PropTypes from 'prop-types'
-import {BID_BTN_PRS_BG, BID_BTN_UN_PRS_BG} from '../../constants/Styles'
+import {BID_BTN_COLORS as clr, BID_RES_COMPONENT_BG} from '../../constants/styles/Colors'
 
 export default class BiddingButtons extends Component {
 
@@ -18,15 +18,15 @@ export default class BiddingButtons extends Component {
 
     static propTypes = {
         location: PropTypes.string,
-        whenBidBtnPressed: PropTypes.function,
+        whenBidBtnPressed: PropTypes.func,
         bid: PropTypes.number
     };
 
     bgColor = () => {
         if (this.props.bid > 6 && this.props.bid < 14) {
-            return BID_BTN_PRS_BG;
+            return clr.PRESSED_BG;
         }
-        return BID_BTN_UN_PRS_BG;
+        return clr.UNPRESSED_BG;
     };
 
     onChangeText = (text) => {
@@ -36,7 +36,7 @@ export default class BiddingButtons extends Component {
 
     render(){
         return (
-            <View row bg-red70 style={{height:40, width:165}}>
+            <View row style={{height:40, width:165, backgroundColor: BID_RES_COMPONENT_BG}}>
                 <BidBtn bid={this.props.bid} location={this.props.location} whenBidBtnPressed={this.props.whenBidBtnPressed} num={0}/>
                 <BidBtn bid={this.props.bid} location={this.props.location} whenBidBtnPressed={this.props.whenBidBtnPressed} num={1}/>
                 <BidBtn bid={this.props.bid} location={this.props.location} whenBidBtnPressed={this.props.whenBidBtnPressed} num={2}/>
@@ -47,6 +47,7 @@ export default class BiddingButtons extends Component {
                 <TextField
                     centered
                     text90
+                    titleColor={clr.TEXT}
                     containerStyle={{height:40, width:25, backgroundColor: this.bgColor()}}
                     placeholder={'*'}
                     value={this.state.textVal}

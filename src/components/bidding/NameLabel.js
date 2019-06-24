@@ -1,23 +1,28 @@
 import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
-import {Text, View, TextField, Colors} from 'react-native-ui-lib';
-import PropTypes from 'prop-types'
+import {Text, View, TextField, Colors, Assets} from 'react-native-ui-lib';
+import PropTypes from 'prop-types';
+import {BID_RES_COMPONENT_BG, NAME_LABEL_COLORS as clr} from "../../constants/styles/Colors";
+
 
 export default class NameField extends Component {
 
     static propTypes = {
         name: PropTypes.string,
-        points: PropTypes.number
+        points: PropTypes.number,
+        king: PropTypes.bool
     };
 
-    getScoreColor = () => this.props.points < 0 ? Colors.red20 : this.props.points > 0 ? Colors.green20 : Colors.black;
+    getScoreColor = () => this.props.points < 0 ? clr.NUM_MINUS : this.props.points > 0 ? clr.NUM_PLUS : clr.NUM_ZERO;
 
     render(){
         return (
-            <View spread centerV row bg-red70 padding-5 style={{height:40, width:165}}>
-                <Text text60 uppercase>
+            <View spread centerV row padding-5 style={{height:40, width:165, backgroundColor:BID_RES_COMPONENT_BG}}>
+            {/*<View spread centerV row padding-5 style={{height:40, width:165, backgroundColor:clr.BG}}>*/}
+                <Text text70 uppercase style={{fontWeight: 'bold', color: clr.NAME}}>
                     {this.props.name}
                 </Text>
+                {this.props.king ? <Text>{Assets.emojis.crown}</Text> : undefined}
                 <Text text70 style={{fontWeight: 'bold', color: this.getScoreColor()}}>
                     {this.props.points}
                 </Text>

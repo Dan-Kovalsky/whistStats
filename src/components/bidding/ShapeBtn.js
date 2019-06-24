@@ -3,6 +3,7 @@ import {StyleSheet} from 'react-native';
 import {Text, View, TextField,Colors, Button} from 'react-native-ui-lib';
 
 import PropTypes from 'prop-types';
+import {SHAPE_BTN_COLORS as clr} from "../../constants/styles/Colors";
 
 
 export default class ShapeBtn extends Component {
@@ -11,36 +12,30 @@ export default class ShapeBtn extends Component {
         trump: PropTypes.number,
     };
 
+    bgColor = () => {
+        if (this.props.chosenTrump === this.props.shapeName){           //this button pressed
+            return clr.PRESSED_BG;
+        }
+        return clr.UNPRESSED_BG;
+    };
+    fontSize = () => {
+        if (this.props.chosenTrump === this.props.shapeName){           //this button pressed
+            return 25;
+        }
+        return 12;
+    };
+
     render(){
-
         return (
-            this.props.chosenTrump === this.props.shapeName
-                ?
-                <Button
-                    bg-violet40
-                    borderRadius={15}
-                    round
-                    style={{height:50, width:50}}
-                    onPress={() => this.props.whenShapePressed(this.props.shapeName)}>
-                    {/*onPress={() => alert('spade')}>*/}
-                    <Text>
-                        {this.props.trumpEmoji}
-                    </Text>
-                </Button>
-                :
-                <Button
-                    bg-violet60
-                    borderRadius={15}
-                    round
-                    style={{height:50, width:50}}
-                    onPress={() => this.props.whenShapePressed(this.props.shapeName)}>
-                    {/*onPress={() => alert('spade')}>*/}
-                    <Text>
-                        {this.props.trumpEmoji}
-                    </Text>
-                </Button>
-
+            <Button
+                borderRadius={15}
+                round
+                style={{height:50, width:50, backgroundColor: this.bgColor()}}
+                onPress={() => this.props.whenShapePressed(this.props.shapeName)}>
+                <Text style={{fontSize:this.fontSize()}}>
+                    {this.props.trumpEmoji}
+                </Text>
+            </Button>
         )
-
     }
 }

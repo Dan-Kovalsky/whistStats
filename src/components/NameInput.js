@@ -1,25 +1,27 @@
 import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
 import {Text, View, TextField,Colors} from 'react-native-ui-lib';
+import {NAME_INPUT_COLORS as clr, NEW_GAME_SCREEN_BG} from "../constants/styles/Colors";
 
 export default class NameInput extends Component {
 
     render(){
         return (
-            <View center bg-red20 margin-10 style={{height:84, width:164}}>
+            <View marginH-5 marginV-15 center >
                 <TextField
+                    color={clr.TEXT}
                     centered
-                    text80
-                    containerStyle={{margin:2, height:80, width:160, backgroundColor: 'pink'}}
+                    text60
+                    containerStyle={{margin:2, height:80, width:160, backgroundColor: clr.BG, borderColor:clr.FRAME, borderWidth:1}}
                     floatingPlaceholder
-                    placeholderTextColor={Colors.cyan30}
-                    floatingPlaceholderColor={Colors.cyan10}
+                    placeholderTextColor={clr.PLACE_HOLDER_TEXT}
+                    floatingPlaceholderColor={Colors.yellow10}
 
 
                     placeholder={this.props.position}
                     onChangeText={this.props.onChangeText}
 
-                    underlineColor={{focus: Colors.purple50}}
+                    underlineColor={{focus: clr.UNDER_LINE_FOCUS}}
 
                 />
 
