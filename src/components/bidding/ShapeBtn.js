@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, View, TextField,Colors, Button} from 'react-native-ui-lib';
+import {Text, Button} from 'react-native-ui-lib';
 
 import PropTypes from 'prop-types';
 import {SHAPE_BTN_COLORS as clr} from "../../constants/styles/Colors";
@@ -28,7 +27,7 @@ export default class ShapeBtn extends Component {
     render(){
         return (
             <Button
-                borderRadius={15}
+                borderRadius={150}
                 round
                 style={{height:50, width:50, backgroundColor: this.bgColor()}}
                 onPress={() => this.props.whenShapePressed(this.props.shapeName)}>

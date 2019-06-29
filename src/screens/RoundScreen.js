@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-// import {BackHandler} from 'react-native';
+import {BackHandler, Alert} from 'react-native';
 import {View, Button, Colors, Assets} from 'react-native-ui-lib';
 
 import PropTypes from 'prop-types';
@@ -72,12 +72,42 @@ class RoundScreen extends Component {
                 east: false
             },
             isRoundFail: false,
+            gameStartTime: new Date(),
+            endStartTime: "",     //TODO dont need, only save it when finish game
+            startBidTime: new Date(),
+            startRoundTime: undefined,
+            endRoundTime: undefined
+
         };
 
         Navigation.events().bindComponent(this);
         // this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+    }
 
-
+    deleteLastRound = () => {
+        roundsHistory.pop()
+        const roundNumber = this.state.roundNumber - 1;
+        let points = {
+            north: 0,
+            south: 0,
+            west: 0,
+            east: 0
+        }
+        let curSequence = {
+            north: 0,
+            south: 0,
+            west: 0,
+            east: 0
+        }
+        if (roundsHistory.length > 0) {
+            points = {...roundsHistory[roundsHistory.length - 1].points}
+            curSequence = {...roundsHistory[roundsHistory.length - 1].curSequence}
+        }
+        this.setState({
+            roundNumber,
+            points,
+            curSequence
+        })
     }
 
     // onNavigatorEvent(event) {
@@ -116,7 +146,9 @@ class RoundScreen extends Component {
                         passProps: {
                             somePropToPass: 'Some props - Table from DB',
                             roundsHistory: roundsHistory,
-                            allNames: this.props.allNames
+                            allNames: this.props.allNames,
+                            deleteLastRound: this.deleteLastRound,
+                            gameStartTime: this.state.gameStartTime
                         }
                     }
                 }]
@@ -155,16 +187,6 @@ class RoundScreen extends Component {
             // this.updateRow5()
             // this.changeScreenTitle();
             if (this.state.bid_notRes) {        // We Finished Round
-                // roundsHistory.push({
-                //     roundNumber: this.state.roundNumber,
-                //     chosenTrump: this.state.chosenTrump,
-                //     biddings: {...this.state.biddings},
-                //     results: {...this.state.results},
-                //     points: {...this.state.points},
-                //     upDown: this.state.upDown
-                // })
-                // this.setState(this.initiateNewBidState())
-                // this.uploadResults()                            // todo change to this.pushTableScreen() and move this one up
             }
             else {                              // We finished Bidding
                 this.uploadBiddings()
@@ -228,7 +250,10 @@ class RoundScreen extends Component {
                 west: false,
                 east: false
             },
-            isRoundFail: false
+            isRoundFail: false,
+            startBidTime: new Date(),
+            startRoundTime: undefined,
+            endRoundTime: undefined
         });
 
     }
@@ -320,25 +345,26 @@ class RoundScreen extends Component {
                 if (this.state.didBet.north || this.state.didBet.west || this.state.didBet.east || this.state.didBet.south) {
                     if (this.state.sumOfBiddings !== 13) {
                         let newResultsObject = JSON.parse(JSON.stringify(this.state.biddings));
-                        this.setState({bid_notRes: false, results: newResultsObject, upDown: this.calcUpDown(), sumOfResults: this.state.sumOfBiddings});
+                        this.setState({bid_notRes: false, results: newResultsObject, upDown: this.calcUpDown(), sumOfResults: this.state.sumOfBiddings, startRoundTime: new Date()});
                     } else {
-                        alert('!! SUM 13 !!'); return;
+                        Alert.alert('!! SUM 13 !!'); return;
                     }
                 } else {
-                    alert('!! BET 5+ !!')
+                    Alert.alert('!! BET 5+ !!')
                 }
             } else {
-                alert('!! CHOOSE TRUMP !!'); return;
+                Alert.alert('!! CHOOSE TRUMP !!'); return;
             };
         } else {                        // bid_notRes is false, so we want to end a round
             if(this.state.sumOfResults !== 13) {
-                alert('!! SUM NOT 13 !!'); return;
+                Alert.alert('!! SUM NOT 13 !!'); return;
             } else {
                 this.setState({
                     isStand: this.updateIsStand(this.state.biddings, this.state.results),
                     isRoundFail: this.updateRoundFail(this.state.biddings, this.state.results),
                     curSequence: this.updateSequence(this.state.biddings, this.state.results, this.state.curSequence),
-                    bid_notRes: true
+                    bid_notRes: true,
+                    endRoundTime: new Date()
                 }, () => {
                     this.setState({
                         points: this.updatePointsObject(this.state.biddings, this.state.results, this.state.points)
@@ -353,7 +379,10 @@ class RoundScreen extends Component {
                             isStand: {...this.state.isStand},
                             upDown: this.state.upDown,
                             didBet: {...this.state.didBet},
-                            isRoundFail: this.state.isRoundFail
+                            isRoundFail: this.state.isRoundFail,
+                            startBidTime: this.state.startBidTime,
+                            startRoundTime: this.state.startRoundTime,
+                            endRoundTime: this.state.endRoundTime
                         });
                         this.setState(this.initiateNewBidState(),
                             () => this.changeScreenTitle());
@@ -428,7 +457,6 @@ class RoundScreen extends Component {
     render() {
         return (
             <View flex style={{backgroundColor: clr.BG}}>
-
                 {this.state.bid_notRes ?
                     <View>
                         <BiddingComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} whenBidBtnPressed={this.whenBidBtnPressed} location={'north'} name={this.props.allNames.northName}/>

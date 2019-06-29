@@ -39,8 +39,8 @@ export const TABLE_SCREEN_COLORS = {
 
 
 export const SHAPE_BTN_COLORS = {
-    PRESSED_BG: c.violet40,
-    UNPRESSED_BG: c.violet60
+    PRESSED_BG: c.orange50,
+    UNPRESSED_BG: c.orange60
 }
 
 

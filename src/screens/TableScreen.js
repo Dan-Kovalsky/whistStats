@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {FlatList, Dimensions} from 'react-native';
-import {Text, View, Colors, Assets} from 'react-native-ui-lib';
+import {FlatList, Dimensions, Alert} from 'react-native';
+import {Text, View, Button, Assets, TouchableOpacity} from 'react-native-ui-lib';
 
 import {Navigation} from "react-native-navigation";
 import PropTypes from 'prop-types';
@@ -19,7 +19,9 @@ class TableScreen extends Component {
         componentId: PropTypes.string,
         somePropToPass: PropTypes.string,
         allGamesObj: PropTypes.object,
-        roundsHistory: PropTypes.array
+        roundsHistory: PropTypes.array,
+        deleteLastRound: PropTypes.func,
+        gameStartTime: PropTypes.instanceOf(Date)
     };
 
     constructor(props) {
@@ -28,7 +30,8 @@ class TableScreen extends Component {
         this.backToGameScreen.bind(this.backToGameScreen)
 
         this.state = {
-            allGamesObj : {}
+            allGamesObj : {},
+            roundsHistory: this.props.roundsHistory
         }
 
 
@@ -44,10 +47,6 @@ class TableScreen extends Component {
                         id: 'backToGame',
                         text: 'Back'
                     },
-                    // {
-                    //     id: 'anotherButton',
-                    //     text: 'another'
-                    // }
                 ]
             }
         }
@@ -70,6 +69,51 @@ class TableScreen extends Component {
 
     }
 
+
+    alertEndGameDialog = () => {
+        if (this.state.roundsHistory.length > 0) {
+            Alert.alert(
+                'Finish Game',
+                'Are you sure?',
+                [
+                    {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+                    {text: 'save', onPress: () => {alert("we need to save")}},
+                    {text: 'Delete', onPress: () => alert("Kill The App!")},
+                ],
+                {cancelable: false},
+            );
+        }
+    }
+
+    deleteLastRound = () => {
+        this.props.deleteLastRound()
+        const roundsHistory = this.state.roundsHistory.slice(0, -1)
+        this.setState({roundsHistory})
+    }
+
+
+    alertDeleteDialog = () => {
+        if (this.state.roundsHistory.length > 0) {
+            Alert.alert(
+                'Delete Last Round'
+                ,
+                'Are you sure?',
+                [
+                    {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+                    {text: 'OK', onPress: () => this.deleteLastRound()},
+                ],
+                {cancelable: false},
+            );
+        }
+    };
+
+    renderTimeFromStart = () => {
+        // const minutes = parseInt(Math.abs(new Date() - this.props.gameStartTime) / (1000 * 60) % 60);
+        // const hours = parseInt(Math.abs(new Date() - this.props.gameStartTime) / (1000 * 60 * 60) % 24);
+        // const diffStr = `${hours < 10 ? '0'+hours : hours}:${minutes < 10 ? '0'+minutes : minutes}`;
+        // return <Text>{`Playing Time: ${diffStr}`}</Text>
+        return <Text>{`Playing Time: ${this.getTimeStr(this.props.gameStartTime, new Date())}`}</Text>
+    }
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'backToGame') {
@@ -173,9 +217,26 @@ class TableScreen extends Component {
         )
     }
 
+    getTimeStr = (start, end) => {
+        const difference = Math.abs(end-start)
+        const hours = parseInt(difference / (1000 * 60 * 60) % 24);
+        const minutes = parseInt(difference / (1000 * 60) % 60);
+        const seconds = parseInt(difference / (1000) % 60);
+        const hoursStr = hours < 10 ? '0'+hours :hours
+        const minutesStr = minutes < 10 ? '0'+minutes : minutes
+        const secondsStr = seconds < 10 ? '0' + seconds : seconds
+        return`${hoursStr}:${minutesStr}:${secondsStr}`;
+        // return`${minutes < 10 ? '0'+minutes : minutes}:${seconds < 10 ? '0'+seconds : seconds}`;
+    }
+
+    showRoundInfo = (item) => () => {
+        Alert.alert(`Round ${item.roundNumber}`,
+            `Bidding Time: ${this.getTimeStr(item.startBidTime, item.startRoundTime)}\nPlaying time: ${this.getTimeStr(item.startRoundTime, item.endRoundTime)}`)
+    }
+
     renderLine = item => {
         return (
-            <View row styles={{height: 50}}>
+            <TouchableOpacity row style={{height: 50}} onLongPress={this.showRoundInfo(item.item)}>
                 {this.renderRoundNumCube(item.item)}
                 {this.renderUpDownCube(item.item)}
                 {this.renderTrumpCube(item.item)}
@@ -183,7 +244,58 @@ class TableScreen extends Component {
                 {this.renderResCube(item.item, 'west')}
                 {this.renderResCube(item.item, 'south')}
                 {this.renderResCube(item.item, 'east')}
+            </TouchableOpacity>
+        )
+    }
+
+    renderFooter = () => {
+        return (
+            <View center>
+                <View row>
+                    <Button
+                        backgroundColor={'red'}
+                        color={'white'}
+                        label={'Delete Last Round'}
+                        size="small"
+                        borderRadius={50}
+                        text80
+                        labelStyle={{fontWeight: 'bold'}}
+                        style={{width:170, height:30, margin:10}}
+                        // ref={element => (this.button_0 = element)}
+                        onPress={this.alertDeleteDialog}
+                    />
+                    <Button
+                        backgroundColor={'blue'}
+                        color={'white'}
+                        label={'End Game'}
+                        size="small"
+                        borderRadius={50}
+                        text80
+                        labelStyle={{fontWeight: 'bold'}}
+                        style={{width:170, height:30, margin:10}}
+                        // ref={element => (this.button_0 = element)}
+                        onPress={this.alertEndGameDialog}
+                    />
+                </View>
+                {this.renderTimeFromStart()}
+                <Text>{"\nlong press on a round to get more info\n"}</Text>
+                {/*<Text>*/}
+                {/*    {"\nnewDate " + new Date()}*/}
+                {/*    {"\ngetfullyear " + new Date().getFullYear()}*/}
+                {/*    {"\ngetmonth " + new Date().getMonth()}*/}
+                {/*    {"\ngetDate " + new Date().getDate()}*/}
+                {/*    {"\ngetHour " + new Date().getHours()}*/}
+                {/*    {"\ngetMinute " + new Date().getMinutes()}*/}
+                {/*    {"\ngetSeconds " + new Date().getSeconds()}*/}
+                {/*    {"\ntoDateString " + new Date().toDateString()}*/}
+                {/*    {"\ntoJson " + new Date().toJSON()}*/}
+                {/*    {"\ntoLocaleDateString " + new Date().toLocaleDateString()}*/}
+                {/*    {"\ntoLocaleString " + new Date().toLocaleString()}*/}
+                {/*    {"\ntoString " + new Date().toString()}*/}
+                {/*    {"\ntoTimeString " + new Date().toTimeString()}*/}
+                {/*</Text>*/}
             </View>
+
         )
     }
 
@@ -195,8 +307,9 @@ class TableScreen extends Component {
                 {this.renderTitle()}
                 <FlatList
                     keyExtractor={(item) => item.roundNumber.toString()}
-                    data={this.props.roundsHistory}
+                    data={this.state.roundsHistory}
                     renderItem={this.renderLine}
+                    ListFooterComponent={this.renderFooter}
                 />
             </View>
         );

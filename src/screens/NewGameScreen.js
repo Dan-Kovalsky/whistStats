@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
-import {Text, View, TextField, Colors,TextArea, Image} from 'react-native-ui-lib';
+import {Text, View, TextField, Colors,TextArea, Image, Assets} from 'react-native-ui-lib';
 
 import NameInput from './../components/NameInput'
 import NameLabel from '../components/bidding/NameLabel'
@@ -60,6 +60,13 @@ class NewGameScreen extends Component {
                         enabled: !false     //TODO DELETE '!'
                     }
                 ]
+            },
+            fab: {
+                id: 'add',
+                // icon: Assets.icons.general.search,
+                backgroundColor: 'blue',
+                testID: "SOME TEST ID",
+                iconColor: 'white',
             }
         };
     }

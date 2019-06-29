@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, View, TextField,Colors, Button} from 'react-native-ui-lib';
+import {Button} from 'react-native-ui-lib';
 import {BID_BTN_COLORS as clr} from '../../constants/styles/Colors'
 
 import PropTypes from 'prop-types';
