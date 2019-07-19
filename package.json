@@ -7,6 +7,7 @@
     "test": "jest",
     "android": "cd ./android && ./gradlew app:assembleDebug && ./gradlew installDebug",
     "apkToDesktop": "cd ./android && ./gradlew app:assembleRelease && cd ./app/build/outputs/apk/release && cp app-release.apk ~/Desktop/WhistStats.apk && open ~/Desktop && open -a slack",
+    "apkToRelease": "cd ./android && ./gradlew app:assembleRelease",
     "fake-server": "json-server --watch db.json",
     "android-studio": "open -a /Applications/Android\\ Studio.app android",
     "xcode": "xed ./ios/whistStats.xcodeproj"

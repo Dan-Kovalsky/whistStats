@@ -77,8 +77,8 @@ class TableScreen extends Component {
                 'Are you sure?',
                 [
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
-                    {text: 'save', onPress: () => {alert("we need to save")}},
-                    {text: 'Delete', onPress: () => alert("Kill The App!")},
+                    {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
+                    {text: 'Delete', onPress: () => alert("Kill the app to start new game!")},
                 ],
                 {cancelable: false},
             );
