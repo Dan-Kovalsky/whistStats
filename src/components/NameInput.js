@@ -26,7 +26,6 @@ export default class NameInput extends Component {
                     value={this.props.text}
                     placeholder={this.props.position}
                     onChangeText={this.props.onChangeText}
-
                     underlineColor={{focus: clr.UNDER_LINE_FOCUS}}
 
                 />

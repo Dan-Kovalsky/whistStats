@@ -31,6 +31,24 @@ export default class ResBtn extends Component {
 
     render(){
 
+        if (this.props.num < 10) {
+            return (
+                <Button
+                    backgroundColor={this.bgColor()}
+                    color={clr.TEXT}
+                    round
+                    label={this.props.num.toString()}
+                    size='xSmall'
+                    // borderRadius={40}
+                    text70
+                    labelStyle={{fontWeight: 'bold'}}
+                    style={{width: 20, height: 40}}
+                    // ref={element => (this.button_0 = element)}
+                    onPress={() => this.props.whenResBtnPressed(this.props.location, this.props.num)}
+                />
+            )
+        }
+        //todo change uilib typography.text90.fontSize -> ios from 13 to 12
         return (
             <Button
                 backgroundColor={this.bgColor()}
@@ -39,13 +57,14 @@ export default class ResBtn extends Component {
                 label={this.props.num.toString()}
                 size='xSmall'
                 // borderRadius={40}
-                text80
+                text90
                 labelStyle={{fontWeight: 'bold'}}
                 style={{width:20, height:40}}
                 // ref={element => (this.button_0 = element)}
                 onPress={() => this.props.whenResBtnPressed(this.props.location, this.props.num)}
             />
         )
+
 
     }
 }
