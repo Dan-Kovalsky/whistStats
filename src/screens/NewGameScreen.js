@@ -11,7 +11,11 @@ import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
 import BidBtn from "../components/bidding/BidBtn";
 import RoundTrump from "../components/results/RoundTrump";
+import AsyncStorage from '@react-native-community/async-storage';
 import {NEW_GAME_SCREEN_BG} from "../constants/styles/Colors";
+
+import {whistStore} from "../stores/allGamesStore";
+
 
 class NewGameScreen extends Component {
 
@@ -36,6 +40,14 @@ class NewGameScreen extends Component {
 
         this.pushRoundScreen = this.pushRoundScreen.bind(this);
         this.enableStartBtn = this.enableStartBtn.bind(this);
+    }
+
+    componentDidMount(){
+        whistStore.loadGamesHistory()
+        AsyncStorage.getItem('@WhistStats:NewGameScreen:southName')
+            .then(name => {
+                this.setState({names:{...this.state.names, southName: name}})
+            })
     }
 
     pushRoundScreen() {
@@ -72,7 +84,15 @@ class NewGameScreen extends Component {
     }
 
     navigationButtonPressed({buttonId}) {
+        this.saveNorthName();
         this.pushRoundScreen();
+    }
+
+    saveNorthName = () => {
+        AsyncStorage.setItem(
+            '@WhistStats:NewGameScreen:southName',
+            this.state.names.southName,
+        )
     }
 
     onNChanged = name => {
@@ -114,11 +134,12 @@ class NewGameScreen extends Component {
     render() {
         return (
             <View flex style={{backgroundColor: NEW_GAME_SCREEN_BG}}>
-                <NameInput position='north' onChangeText={this.onNChanged}/>
+                <NameInput text={this.state.names.northName} position='north' onChangeText={this.onNChanged}/>
                 <View spread row>
-                    <NameInput position='west' onChangeText={this.onWChanged}/>
-                    <NameInput position='east' onChangeText={this.onEChanged}/></View>
-                <NameInput position='south' onChangeText={this.onSChanged}/>
+                    <NameInput text={this.state.names.westName} position='west' onChangeText={this.onWChanged}/>
+                    <NameInput text={this.state.names.eastName} position='east' onChangeText={this.onEChanged}/>
+                </View>
+                <NameInput text={this.state.names.southName} position='south' onChangeText={this.onSChanged}/>
             </View>
         );
     }

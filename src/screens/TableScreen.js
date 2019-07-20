@@ -6,7 +6,7 @@ import {Navigation} from "react-native-navigation";
 import PropTypes from 'prop-types';
 
 import {connect} from 'remx';
-import {whistStore} from './../stores/allGamesStore'
+import {whistStore} from '../stores/allGamesStore'
 import * as allGamesActions from './../actions/allGamesActions'
 import {TABLE_SCREEN_COLORS as clr} from "../constants/styles/Colors";
 
@@ -69,16 +69,20 @@ class TableScreen extends Component {
 
     }
 
+    saveGameAndOpenMyGames = async () => {
+        await whistStore.addNewGame([this.props.roundsHistory]);
+        this.showGamesHistoryScreen();
+    }
 
-    alertEndGameDialog = () => {
+    alertEndGameDialogAndSave = () => {
         if (this.state.roundsHistory.length > 0) {
             Alert.alert(
                 'Finish Game',
                 'Are you sure?',
                 [
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
-                    {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
-                    {text: 'Delete', onPress: () => alert("Kill the app to start new game!")},
+                    {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
+                    {text: 'Delete', onPress: () => Alert.alert("Kill the app to start new game!")},
                 ],
                 {cancelable: false},
             );
@@ -123,6 +127,24 @@ class TableScreen extends Component {
 
     backToGameScreen() {
         Navigation.dismissModal(this.props.componentId);
+    }
+
+    showGamesHistoryScreen = () => {
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name: 'whistStats.MyGamesScreen',
+                        passProps: {
+                            somePropToPass: 'Some props - Table from DB',
+                        }
+                    }
+                }]
+            }
+        });
+    }
+    gamesHistoryBtnPressed = () => {
+        this.showGamesHistoryScreen();
     }
 
     renderTitleCube = (str) => {
@@ -274,26 +296,23 @@ class TableScreen extends Component {
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
                         // ref={element => (this.button_0 = element)}
-                        onPress={this.alertEndGameDialog}
+                        onPress={this.alertEndGameDialogAndSave}
                     />
                 </View>
                 {this.renderTimeFromStart()}
                 <Text>{"\nlong press on a round to get more info\n"}</Text>
-                {/*<Text>*/}
-                {/*    {"\nnewDate " + new Date()}*/}
-                {/*    {"\ngetfullyear " + new Date().getFullYear()}*/}
-                {/*    {"\ngetmonth " + new Date().getMonth()}*/}
-                {/*    {"\ngetDate " + new Date().getDate()}*/}
-                {/*    {"\ngetHour " + new Date().getHours()}*/}
-                {/*    {"\ngetMinute " + new Date().getMinutes()}*/}
-                {/*    {"\ngetSeconds " + new Date().getSeconds()}*/}
-                {/*    {"\ntoDateString " + new Date().toDateString()}*/}
-                {/*    {"\ntoJson " + new Date().toJSON()}*/}
-                {/*    {"\ntoLocaleDateString " + new Date().toLocaleDateString()}*/}
-                {/*    {"\ntoLocaleString " + new Date().toLocaleString()}*/}
-                {/*    {"\ntoString " + new Date().toString()}*/}
-                {/*    {"\ntoTimeString " + new Date().toTimeString()}*/}
-                {/*</Text>*/}
+                <Button
+                    backgroundColor={'green'}
+                    color={'white'}
+                    label={'Games History'}
+                    size="small"
+                    borderRadius={50}
+                    text80
+                    labelStyle={{fontWeight: 'bold'}}
+                    style={{width:270, height:30, margin:10}}
+                    // ref={element => (this.button_0 = element)}
+                    onPress={this.gamesHistoryBtnPressed}
+                />
             </View>
 
         )
@@ -301,7 +320,7 @@ class TableScreen extends Component {
 
 
     render() {
-        let gamesLst = this.state.allGamesObj.games
+        // let gamesLst = this.state.allGamesObj.games
         return (
             <View flex style={{backgroundColor: clr.BG}}>
                 {this.renderTitle()}

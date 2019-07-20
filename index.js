@@ -18,7 +18,7 @@ Navigation.events().registerAppLaunchedListener(() => {
                             options: {
                                 topBar: {
                                     title: {
-                                        text: 'New Game Screen'
+                                        text: 'Insert Names'
                                     }
                                 }
                             }

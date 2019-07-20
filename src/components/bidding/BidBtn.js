@@ -31,7 +31,7 @@ export default class BidBtn extends Component {
                 label={this.props.num.toString()}
                 size='xSmall'
                 // borderRadius={40}
-                text80
+                text70
                 labelStyle={{fontWeight: 'bold'}}
                 style={{width:20, height:40}}
                 onPress={() => this.props.whenBidBtnPressed(this.props.location, this.props.num)}
