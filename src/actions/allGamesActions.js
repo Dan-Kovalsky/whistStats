@@ -92,6 +92,6 @@ const whistGame =
     }
 
 export function fetchWhistGame() {
-    whistStore.setFakeWhistGame(whistGame)
+    // whistStore.setFakeWhistGame(whistGame)
 
 }

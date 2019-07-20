@@ -1,6 +1,12 @@
+import AsyncStorage from '@react-native-community/async-storage';
+// import AsyncStorage from 'react-native';
 import * as remx from 'remx';
+
+const ALL_GAMES_KEY = "all-games"
+
+
 const initialState = {
-    games: {}
+    games: []
 };
 
 const state = remx.state(initialState);
@@ -11,23 +17,56 @@ const getters = remx.getters({
         return state.games;
     },
 
-    getGameByGameId(gameId){
-        return state.games[gameId];
+    getGameByIndex(index){
+        return state.games[index];
     }
 });
 
 
 const setters = remx.setters({
-    setFakeWhistGame(gamesObj){
-        state.games = gamesObj;
+
+    async loadGamesHistory() {
+        try {
+            const allGamesString =  await AsyncStorage.getItem("ALL_GAMES_KEY");
+            if (allGamesString) {
+                alert("DANKOV INSIDE IF" + allGamesString)
+                const allGamesJson = JSON.parse(allGamesString);
+                state.games = allGamesJson;
+            }
+        } catch (error) {
+            console.warn(error.message);
+        }
+        return
     },
 
-    setBid(GameIdx, roundIdx, bidLst){
-        state.games[gameNum].rounds[roundIdx].biddings = bidLst;
+    async addNewGame(gameAsJson) {
+        state.games.push(gameAsJson)
+        console.warn('DANKOV inAddNewGame gameAsJson = '  + gameAsJson)
+        try {
+            // await AsyncStorage.setItem("ALL_GAMES_KEY", "DAN kovalsky str")
+            await AsyncStorage.setItem("ALL_GAMES_KEY", JSON.stringify(state.games))
+        } catch (error) {
+            console.warn(error.message);
+        }
     },
-    setResult(GameIdx, roundIdx, resultLst){
-        state.games[gameNum].rounds[roundIdx].results = resultLst;
+
+    async deleteGameByIndex(index) {
+        state.games.splice(index, 1)
+        try {
+            await AsyncStorage.setItem("ALL_GAMES_KEY", JSON.stringify(state.games))
+        } catch (error) {
+            console.warn(error.message);
+        }
     }
+    // setFakeWhistGame(gamesObj){
+    //     state.games = gamesObj;
+    // },
+    // setBid(GameIdx, roundIdx, bidLst){
+    //     state.games[gameNum].rounds[roundIdx].biddings = bidLst;
+    // },
+    // setResult(GameIdx, roundIdx, resultLst){
+    //     state.games[gameNum].rounds[roundIdx].results = resultLst;
+    // }
 })
 
 export const whistStore = {
