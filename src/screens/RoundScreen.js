@@ -159,17 +159,18 @@ class RoundScreen extends Component {
 
     static get options() {
         return {
+            popGesture: false,
             topBar: {
                 rightButtons: [
                     {
-                        id: 'seeTable',
+                        id: 'tableBtn',
                         text: `Table ${Assets.emojis.clipboard}`
                     }
                 ],
                 leftButtons: [
                     {
-                        id: 'test',
-                        text: 'tst'
+                        id: 'backBtn',
+                        text: 'back'
                     }
                 ],
                 title: {
@@ -217,7 +218,29 @@ class RoundScreen extends Component {
 
 
     navigationButtonPressed({buttonId}) {
-        this.pushTableScreen();
+        if (buttonId === 'tableBtn') {
+            this.pushTableScreen();
+        }
+        else if (buttonId === 'backBtn') {
+            this.iosNavigationBackBtnPressed()
+        }
+    }
+
+    iosNavigationBackBtnPressed = () => {
+        Alert.alert(
+            'Warning',
+            'This will delete the game',
+            [
+                {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+                {text: 'OK', onPress: () => {this.popScreenAndDeleteGame()}}
+            ],
+            {cancelable: false},
+        );
+    }
+
+    popScreenAndDeleteGame = () => {
+        roundsHistory = [];
+        Navigation.pop(this.props.componentId);
     }
 
         // Call this function only after finish whole Round
