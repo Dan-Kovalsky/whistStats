@@ -18,10 +18,11 @@ class TableScreen extends Component {
     static propTypes = {
         componentId: PropTypes.string,
         somePropToPass: PropTypes.string,
-        allGamesObj: PropTypes.object,
+        allGamesObj: PropTypes.array,
         roundsHistory: PropTypes.array,
         deleteLastRound: PropTypes.func,
-        gameStartTime: PropTypes.instanceOf(Date)
+        gameStartTime: PropTypes.instanceOf(Date),
+        popScreenAndDeleteGame: PropTypes.func
     };
 
     constructor(props) {
@@ -146,6 +147,24 @@ class TableScreen extends Component {
     gamesHistoryBtnPressed = () => {
         this.showGamesHistoryScreen();
     }
+
+    alertBeforeRestart = () =>{
+        Alert.alert(
+            'Warning',
+            'This will delete the current game',
+            [
+                {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+                {text: 'OK', onPress: () => {this.popToRootAndDeleteGame()}}
+            ],
+            {cancelable: false},
+        );
+    }
+
+    popToRootAndDeleteGame = async () => {
+        await this.props.popScreenAndDeleteGame()
+        Navigation.dismissModal(this.props.componentId)
+    }
+
 
     renderTitleCube = (str) => {
         return (
@@ -295,25 +314,36 @@ class TableScreen extends Component {
                         text80
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
-                        // ref={element => (this.button_0 = element)}
                         onPress={this.alertEndGameDialogAndSave}
                     />
                 </View>
                 {this.renderTimeFromStart()}
-                <Text>{"\nlong press on a round to get more info\n"}</Text>
-                <Button
-                    backgroundColor={'green'}
-                    color={'white'}
-                    label={'Games History'}
-                    size="small"
-                    borderRadius={50}
-                    text80
-                    labelStyle={{fontWeight: 'bold'}}
-                    style={{width:270, height:30, margin:10}}
-                    // ref={element => (this.button_0 = element)}
-                    onPress={()=>alert("WIP, soon you will get your history")}
-                    // onPress={this.gamesHistoryBtnPressed}
-                />
+                <Text>{"long press on a round to get more info"}</Text>
+                <View row>
+                    <Button
+                        backgroundColor={'green'}
+                        color={'white'}
+                        label={'Games History'}
+                        size="small"
+                        borderRadius={50}
+                        text80
+                        labelStyle={{fontWeight: 'bold'}}
+                        style={{width:170, height:30, margin:10}}
+                        onPress={()=>alert("WIP, soon you will get your history")}
+                        // onPress={this.gamesHistoryBtnPressed}
+                    />
+                    <Button
+                        backgroundColor={'pink'}
+                        color={'white'}
+                        label={'Restart game'}
+                        size="small"
+                        borderRadius={50}
+                        text80
+                        labelStyle={{fontWeight: 'bold'}}
+                        style={{width:170, height:30, margin:10}}
+                        onPress={this.alertBeforeRestart}
+                    />
+                </View>
             </View>
 
         )
