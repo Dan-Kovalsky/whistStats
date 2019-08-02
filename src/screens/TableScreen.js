@@ -81,7 +81,8 @@ class TableScreen extends Component {
                 'Are you sure?',
                 [
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
-                    {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
+                    {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
+                    // {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
                     {text: 'Delete', onPress: () => Alert.alert("Kill the app to start new game!")},
                 ],
                 {cancelable: false},
@@ -94,7 +95,6 @@ class TableScreen extends Component {
         const roundsHistory = this.state.roundsHistory.slice(0, -1)
         this.setState({roundsHistory})
     }
-
 
     alertDeleteDialog = () => {
         if (this.state.roundsHistory.length > 0) {
@@ -311,7 +311,8 @@ class TableScreen extends Component {
                     labelStyle={{fontWeight: 'bold'}}
                     style={{width:270, height:30, margin:10}}
                     // ref={element => (this.button_0 = element)}
-                    onPress={this.gamesHistoryBtnPressed}
+                    onPress={()=>alert("WIP, soon you will get your history")}
+                    // onPress={this.gamesHistoryBtnPressed}
                 />
             </View>
 

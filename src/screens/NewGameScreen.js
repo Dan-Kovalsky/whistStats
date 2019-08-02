@@ -139,7 +139,7 @@ class NewGameScreen extends Component {
                     <NameInput text={this.state.names.westName} position='west' onChangeText={this.onWChanged}/>
                     <NameInput text={this.state.names.eastName} position='east' onChangeText={this.onEChanged}/>
                 </View>
-                <NameInput text={this.state.names.southName} position='south' onChangeText={this.onSChanged}/>
+                <NameInput text={this.state.names.southName} position='My Name' onChangeText={this.onSChanged}/>
             </View>
         );
     }

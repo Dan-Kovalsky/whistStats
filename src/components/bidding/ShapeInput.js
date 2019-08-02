@@ -8,7 +8,7 @@ export default class ShapeInput extends Component {
 
     render(){
         return (
-            <View margin-20>
+            <View margin-10>
                 <View center row>
                     <ShapeBtn chosenTrump={this.props.chosenTrump} whenShapePressed={this.props.whenShapePressed} trumpEmoji={Assets.emojis.spades} shapeName={'spades'}/>
                     <ShapeBtn chosenTrump={this.props.chosenTrump} whenShapePressed={this.props.whenShapePressed} trumpEmoji={Assets.emojis.hearts} shapeName={'hearts'}/>
