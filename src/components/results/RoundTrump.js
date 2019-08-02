@@ -29,7 +29,7 @@ export default class RoundTrump extends Component {
 
     render(){
         return (
-            <View margin-20 center>
+            <View margin-10 center>
                 <Image
                     style={{height:100, width:100}}
                     source={this.getTrumpLogo()}

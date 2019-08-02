@@ -496,7 +496,7 @@ class RoundScreen extends Component {
                         borderRadius={50}
                         text60
                         labelStyle={{fontWeight: 'bold'}}
-                        style={{width:200, height:100}}
+                        style={{width:250, height:40}}
                         // ref={element => (this.button_0 = element)}
                         onPress={() => this.changeRoundState()}
                     />
