@@ -3,6 +3,7 @@ package com.whiststats;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.corbt.keepawake.KCKeepAwakePackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -44,7 +45,8 @@ public class MainApplication extends NavigationApplication {
             new AsyncStoragePackage(),
             new HighlighterViewPackage(),
             new TextInputDelKeyHandlerPackage(),
-            new WheelPickerPackage()
+            new WheelPickerPackage(),
+            new KCKeepAwakePackage()
                         // eg. new VectorIconsPackage()
     );
   }
