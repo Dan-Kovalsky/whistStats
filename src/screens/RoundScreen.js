@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {BackHandler, Alert} from 'react-native';
+import {BackHandler, Alert, TouchableWithoutFeedback, Keyboard} from 'react-native';
 import {View, Button, Colors, Assets} from 'react-native-ui-lib';
 
 import PropTypes from 'prop-types';
@@ -470,53 +470,55 @@ class RoundScreen extends Component {
 
     render() {
         return (
-            <View flex style={{backgroundColor: clr.BG}}>
-                {this.state.bid_notRes ?
-                    <View>
-                        <BiddingComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} whenBidBtnPressed={this.whenBidBtnPressed} location={'north'} name={this.props.allNames.northName}/>
-                        <View spread row>
-                            <BiddingComponent king={this.state.didBet.west} points={this.state.points.west} bid={this.state.biddings.west} whenBidBtnPressed={this.whenBidBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
-                            <BiddingComponent king={this.state.didBet.east} points={this.state.points.east} bid={this.state.biddings.east} whenBidBtnPressed={this.whenBidBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
-                        </View>
-                        <BiddingComponent king={this.state.didBet.south} points={this.state.points.south} bid={this.state.biddings.south} whenBidBtnPressed={this.whenBidBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
-                    </View>
-                    :
-                    <View>
-                        <ResultsComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} res={this.state.results.north} whenResBtnPressed={this.whenResBtnPressed} location={'north'} name={this.props.allNames.northName}/>
-                        <View spread row>
-                            <ResultsComponent king={this.state.didBet.west} points={this.state.points.west} bid={this.state.biddings.west} res={this.state.results.west} whenResBtnPressed={this.whenResBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
-                            <ResultsComponent king={this.state.didBet.east} points={this.state.points.east} bid={this.state.biddings.east} res={this.state.results.east} whenResBtnPressed={this.whenResBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
-                        </View>
-                        <ResultsComponent king={this.state.didBet.south} points={this.state.points.south} bid={this.state.biddings.south} res={this.state.results.south} whenResBtnPressed={this.whenResBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
-                    </View>
-                }
-
-                <View row center>
-                    <BidInfo bid_notRes={this.state.bid_notRes} sumOfBiddings={this.state.sumOfBiddings} sumOfResults={this.state.sumOfResults}/>
+            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                <View flex style={{backgroundColor: clr.BG}}>
                     {this.state.bid_notRes ?
-                        <ShapeInput chosenTrump={this.state.chosenTrump} whenShapePressed={this.whenShapePressed}></ShapeInput>
+                        <View>
+                            <BiddingComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} whenBidBtnPressed={this.whenBidBtnPressed} location={'north'} name={this.props.allNames.northName}/>
+                            <View spread row>
+                                <BiddingComponent king={this.state.didBet.west} points={this.state.points.west} bid={this.state.biddings.west} whenBidBtnPressed={this.whenBidBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
+                                <BiddingComponent king={this.state.didBet.east} points={this.state.points.east} bid={this.state.biddings.east} whenBidBtnPressed={this.whenBidBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
+                            </View>
+                            <BiddingComponent king={this.state.didBet.south} points={this.state.points.south} bid={this.state.biddings.south} whenBidBtnPressed={this.whenBidBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
+                        </View>
                         :
-                        <RoundTrump trump={this.state.chosenTrump}/>
+                        <View>
+                            <ResultsComponent king={this.state.didBet.north} points={this.state.points.north} bid={this.state.biddings.north} res={this.state.results.north} whenResBtnPressed={this.whenResBtnPressed} location={'north'} name={this.props.allNames.northName}/>
+                            <View spread row>
+                                <ResultsComponent king={this.state.didBet.west} points={this.state.points.west} bid={this.state.biddings.west} res={this.state.results.west} whenResBtnPressed={this.whenResBtnPressed} location={'west'}  name={this.props.allNames.westName}/>
+                                <ResultsComponent king={this.state.didBet.east} points={this.state.points.east} bid={this.state.biddings.east} res={this.state.results.east} whenResBtnPressed={this.whenResBtnPressed} location={'east'}  name={this.props.allNames.eastName}/>
+                            </View>
+                            <ResultsComponent king={this.state.didBet.south} points={this.state.points.south} bid={this.state.biddings.south} res={this.state.results.south} whenResBtnPressed={this.whenResBtnPressed} location={'south'}  name={this.props.allNames.southName}/>
+                        </View>
                     }
-                    <ResInfo upDown={this.state.upDown} bid_notRes={this.state.bid_notRes} sumOfBiddings={this.state.sumOfBiddings} sumOfResults={this.state.sumOfResults}/>
-                </View>
 
-                <View centerH>
-                    <Button
-                        backgroundColor={this.state.bid_notRes ? clr.START_ROUND_BTN_BG : clr.END_ROUND_BTN_BG}
-                        color={this.state.bid_notRes ? clr.START_ROUND_BTN_TEXT : clr.END_ROUND_BTN_TEXT}
-                        label={this.state.bid_notRes ? `start round ${this.state.roundNumber}` : `end round ${this.state.roundNumber}`}
-                        size="large"
-                        borderRadius={50}
-                        text60
-                        labelStyle={{fontWeight: 'bold'}}
-                        style={{width:250, height:40}}
-                        // ref={element => (this.button_0 = element)}
-                        onPress={() => this.changeRoundState()}
-                    />
+                    <View row center>
+                        <BidInfo bid_notRes={this.state.bid_notRes} sumOfBiddings={this.state.sumOfBiddings} sumOfResults={this.state.sumOfResults}/>
+                        {this.state.bid_notRes ?
+                            <ShapeInput chosenTrump={this.state.chosenTrump} whenShapePressed={this.whenShapePressed}></ShapeInput>
+                            :
+                            <RoundTrump trump={this.state.chosenTrump}/>
+                        }
+                        <ResInfo upDown={this.state.upDown} bid_notRes={this.state.bid_notRes} sumOfBiddings={this.state.sumOfBiddings} sumOfResults={this.state.sumOfResults}/>
+                    </View>
+
+                    <View centerH>
+                        <Button
+                            backgroundColor={this.state.bid_notRes ? clr.START_ROUND_BTN_BG : clr.END_ROUND_BTN_BG}
+                            color={this.state.bid_notRes ? clr.START_ROUND_BTN_TEXT : clr.END_ROUND_BTN_TEXT}
+                            label={this.state.bid_notRes ? `start round ${this.state.roundNumber}` : `end round ${this.state.roundNumber}`}
+                            size="large"
+                            borderRadius={50}
+                            text60
+                            labelStyle={{fontWeight: 'bold'}}
+                            style={{width:250, height:40}}
+                            // ref={element => (this.button_0 = element)}
+                            onPress={() => this.changeRoundState()}
+                        />
+                    </View>
+                    <KeepAwake />
                 </View>
-                <KeepAwake />
-            </View>
+            </TouchableWithoutFeedback>
         );
     }
 

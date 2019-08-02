@@ -53,6 +53,7 @@ export default class BiddingButtons extends Component {
                     value={this.state.textVal}
                     onChangeText={this.onChangeText}
                     keyboardType={"number-pad"}
+                    maxLength={2}
                 />
             </View>
         )
