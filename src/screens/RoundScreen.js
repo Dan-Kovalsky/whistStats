@@ -180,14 +180,16 @@ class RoundScreen extends Component {
         };
     }
 
-    // componentDidAppear() {
-    //     console.log("componentDidAppear")
-    // }
+    componentDidAppear() {
+        this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.androidPhysicalBackPressed);
+     }
+
+    componentDidDisappear() {
+        this.backHandler.remove()
+    }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.state.bid_notRes !== prevState.bid_notRes) {           //Change Title Only when we change state of bid_notRes
-            // this.updateRow5()
-            // this.changeScreenTitle();
             if (this.state.bid_notRes) {        // We Finished Round
             }
             else {                              // We finished Bidding
@@ -222,17 +224,25 @@ class RoundScreen extends Component {
             this.pushTableScreen();
         }
         else if (buttonId === 'backBtn') {
-            this.iosNavigationBackBtnPressed()
+            this.iosNavigationBackPressed()
         }
     }
 
-    iosNavigationBackBtnPressed = () => {
+    androidPhysicalBackPressed = () => {
+        return this.alertBeforeBack();
+    }
+
+    iosNavigationBackPressed = () => {
+        this.alertBeforeBack()
+    }
+
+    alertBeforeBack = async () =>{
         Alert.alert(
             'Warning',
             'This will delete the game',
             [
-                {text: 'Cancel', onPress: () => {}, style: 'cancel'},
-                {text: 'OK', onPress: () => {this.popScreenAndDeleteGame()}}
+                {text: 'Cancel', onPress: () => {return true}, style: 'cancel'},
+                {text: 'OK', onPress: () => {this.popScreenAndDeleteGame(); return false}}
             ],
             {cancelable: false},
         );
@@ -241,7 +251,7 @@ class RoundScreen extends Component {
     popScreenAndDeleteGame = () => {
         roundsHistory = [];
         Navigation.pop(this.props.componentId);
-    }
+    };
 
         // Call this function only after finish whole Round
     initiateNewBidState = () => {
