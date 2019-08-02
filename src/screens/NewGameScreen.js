@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
+import {TouchableWithoutFeedback, Keyboard} from 'react-native';
 import {Text, View, TextField, Colors,TextArea, Image, Assets} from 'react-native-ui-lib';
 
 import NameInput from './../components/NameInput'
@@ -136,14 +136,16 @@ class NewGameScreen extends Component {
 
     render() {
         return (
-            <View flex style={{backgroundColor: NEW_GAME_SCREEN_BG}}>
-                <NameInput text={this.state.names.northName} position='north' onChangeText={this.onNChanged}/>
-                <View spread row>
-                    <NameInput text={this.state.names.westName} position='west' onChangeText={this.onWChanged}/>
-                    <NameInput text={this.state.names.eastName} position='east' onChangeText={this.onEChanged}/>
+            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                <View flex style={{backgroundColor: NEW_GAME_SCREEN_BG}}>
+                    <NameInput text={this.state.names.northName} position='north' onChangeText={this.onNChanged}/>
+                    <View spread row>
+                        <NameInput text={this.state.names.westName} position='west' onChangeText={this.onWChanged}/>
+                        <NameInput text={this.state.names.eastName} position='east' onChangeText={this.onEChanged}/>
+                    </View>
+                    <NameInput text={this.state.names.southName} position='My Name' onChangeText={this.onSChanged}/>
                 </View>
-                <NameInput text={this.state.names.southName} position='My Name' onChangeText={this.onSChanged}/>
-            </View>
+            </TouchableWithoutFeedback>
         );
     }
 }

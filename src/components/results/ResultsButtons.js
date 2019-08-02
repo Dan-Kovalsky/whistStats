@@ -60,6 +60,7 @@ export default class ResultsButtons extends Component {
                     value={this.state.textVal}
                     onChangeText={this.onChangeText}
                     keyboardType={"number-pad"}
+                    maxLength={2}
                 />
             </View>
         )
