@@ -79,6 +79,9 @@ class NewGameScreen extends Component {
                 backgroundColor: 'blue',
                 testID: "SOME TEST ID",
                 iconColor: 'white',
+            },
+            layout: {
+                orientation: ['portrait']
             }
         };
     }

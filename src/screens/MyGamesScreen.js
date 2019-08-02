@@ -30,6 +30,9 @@ class MyGamesScreen extends Component {
                         text: 'Back'
                     },
                 ]
+            },
+            layout: {
+                orientation: ['portrait']
             }
         }
     }

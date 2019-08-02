@@ -49,6 +49,9 @@ class TableScreen extends Component {
                         text: 'Back'
                     },
                 ]
+            },
+            layout: {
+                orientation: ['portrait']
             }
         }
     }

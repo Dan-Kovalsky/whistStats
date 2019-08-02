@@ -150,6 +150,9 @@ class RoundScreen extends Component {
                 title: {
                     text: `Round 1 Biddings`
                 }
+            },
+            layout: {
+                orientation: ['portrait']
             }
         };
     }
