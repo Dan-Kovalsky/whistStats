@@ -111,33 +111,6 @@ class RoundScreen extends Component {
         })
     }
 
-    // onNavigatorEvent(event) {
-    //     switch (event.id) {
-    //         case 'willAppear':
-    //             this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
-    //             break;
-    //         case 'willDisappear':
-    //             this.backPressed = 0;
-    //             this.backHandler.remove();
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
-    // handleBackPress = () => {
-    //     if (this.backPressed && this.backPressed > 0) {
-    //         this.props.navigator.popToRoot({ animated: false });
-    //         return false;
-    //     }
-    //
-    //     this.backPressed = 1;
-    //     this.props.navigator.showSnackbar({
-    //         text: 'Press one more time to exit',
-    //         duration: 'long',
-    //     });
-    //     return true;
-    // }
-
     pushTableScreen = () => {
         Navigation.showModal({
             stack: {
@@ -149,7 +122,8 @@ class RoundScreen extends Component {
                             roundsHistory: roundsHistory,
                             allNames: this.props.allNames,
                             deleteLastRound: this.deleteLastRound,
-                            gameStartTime: this.state.gameStartTime
+                            gameStartTime: this.state.gameStartTime,
+                            popScreenAndDeleteGame: this.popScreenAndDeleteGame
                         }
                     }
                 }]
@@ -242,15 +216,18 @@ class RoundScreen extends Component {
             'This will delete the game',
             [
                 {text: 'Cancel', onPress: () => {return true}, style: 'cancel'},
-                {text: 'OK', onPress: () => {this.popScreenAndDeleteGame(); return false}}
+                {text: 'OK', onPress: () => {
+                    this.popScreenAndDeleteGame();
+                    return false;
+                }}
             ],
             {cancelable: false},
         );
     }
 
-    popScreenAndDeleteGame = () => {
+    popScreenAndDeleteGame = async () => {
         roundsHistory = [];
-        Navigation.pop(this.props.componentId);
+        await Navigation.pop(this.props.componentId);
     };
 
         // Call this function only after finish whole Round
