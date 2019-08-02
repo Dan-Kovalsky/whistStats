@@ -69,19 +69,13 @@ class NewGameScreen extends Component {
                     {
                         id: 'roundScreen',
                         text: 'Start',
-                        enabled: !false     //TODO DELETE '!'
+                        enabled: false     //TODO DELETE '!'
                     }
                 ]
             },
-            fab: {
-                id: 'add',
-                // icon: Assets.icons.general.search,
-                backgroundColor: 'blue',
-                testID: "SOME TEST ID",
-                iconColor: 'white',
-            },
             layout: {
-                orientation: ['portrait']
+                orientation: ['portrait'],
+                direction: 'ltr'
             }
         };
     }

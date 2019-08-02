@@ -51,7 +51,8 @@ class TableScreen extends Component {
                 ]
             },
             layout: {
-                orientation: ['portrait']
+                orientation: ['portrait'],
+                direction: 'ltr'
             }
         }
     }

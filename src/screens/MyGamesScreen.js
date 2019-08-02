@@ -32,7 +32,8 @@ class MyGamesScreen extends Component {
                 ]
             },
             layout: {
-                orientation: ['portrait']
+                orientation: ['portrait'],
+                direction: 'ltr'
             }
         }
     }
