@@ -9,6 +9,9 @@ import {connect} from 'remx';
 import {whistStore} from '../stores/allGamesStore'
 import * as allGamesActions from './../actions/allGamesActions'
 import {TABLE_SCREEN_COLORS as clr} from "../constants/styles/Colors";
+import AsyncStorage from '@react-native-community/async-storage';
+
+const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 
 const SCREEN_WIDTH = Dimensions.get('screen').width
 const CUBE_WIDTH = SCREEN_WIDTH / 11;
@@ -22,7 +25,8 @@ class TableScreen extends Component {
         roundsHistory: PropTypes.array,
         deleteLastRound: PropTypes.func,
         gameStartTime: PropTypes.instanceOf(Date),
-        popScreenAndDeleteGame: PropTypes.func
+        popScreenAndDeleteGame: PropTypes.func,
+        allNames: PropTypes.object
     };
 
     constructor(props) {
@@ -34,11 +38,7 @@ class TableScreen extends Component {
             allGamesObj : {},
             roundsHistory: this.props.roundsHistory
         }
-
-
     }
-
-
 
     static get options() {
         return {
@@ -59,23 +59,43 @@ class TableScreen extends Component {
 
 
     componentDidMount() {
-        console.log("componentDIDMount")
         allGamesActions.fetchWhistGame();
     }
 
     componentWillMount(){
-        console.log("ComponentWillMount")
         this.props.allGamesObj = whistStore.getAllGames()
         allGamesActions.fetchWhistGame();
 
         this.setState({
             allGamesObj : whistStore.getAllGames()
         })
+    }
 
+    addGameToStorage = async () => {
+        try {
+            let allGames = []
+            const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
+            if (allGamesString !== null) {
+                allGames = JSON.parse(allGamesString)
+            }
+            const objectToAdd = {
+                gameStartTime : this.props.gameStartTime,
+                playerNamesObj: this.props.allNames,
+                playingTimeStr: this.getTimeStr(this.props.gameStartTime, new Date()),
+                roundsHistory : this.state.roundsHistory
+            }
+            allGames.push(objectToAdd)
+            await AsyncStorage.setItem(ALL_GAMES_KEY, JSON.stringify(allGames));
+        } catch (error) {
+
+            // Error retrieving data
+            console.log(error.message);
+        }
     }
 
     saveGameAndOpenMyGames = async () => {
-        await whistStore.addNewGame([this.props.roundsHistory]);
+        await this.addGameToStorage();
+        // await whistStore.addNewGame([this.props.roundsHistory]);
         this.showGamesHistoryScreen();
     }
 
@@ -86,8 +106,8 @@ class TableScreen extends Component {
                 'Are you sure?',
                 [
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
-                    {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
-                    // {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
+                    // {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
+                    {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
                     {text: 'Delete', onPress: () => Alert.alert("Kill the app to start new game!")},
                 ],
                 {cancelable: false},
@@ -104,8 +124,7 @@ class TableScreen extends Component {
     alertDeleteDialog = () => {
         if (this.state.roundsHistory.length > 0) {
             Alert.alert(
-                'Delete Last Round'
-                ,
+                'Delete Last Round',
                 'Are you sure?',
                 [
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
@@ -333,8 +352,8 @@ class TableScreen extends Component {
                         text80
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
-                        onPress={()=>alert("WIP, soon you will get your history")}
-                        // onPress={this.gamesHistoryBtnPressed}
+                        // onPress={()=>alert("WIP, soon you will get your history")}
+                        onPress={this.gamesHistoryBtnPressed}
                     />
                     <Button
                         backgroundColor={'pink'}
@@ -349,7 +368,6 @@ class TableScreen extends Component {
                     />
                 </View>
             </View>
-
         )
     }
 

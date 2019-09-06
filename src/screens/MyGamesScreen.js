@@ -3,8 +3,10 @@ import {FlatList, Alert} from 'react-native';
 import {Text, View, Button, Assets, TouchableOpacity} from 'react-native-ui-lib';
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
-
 import {Navigation} from "react-native-navigation";
+import AsyncStorage from '@react-native-community/async-storage';
+
+const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 
 class MyGamesScreen extends Component {
 
@@ -17,9 +19,11 @@ class MyGamesScreen extends Component {
 
         this.state = {
             allGamesObj: [],
+            allGames: [],
             roundsHistory: this.props.roundsHistory
         }
     }
+
 
     static get options() {
         return {
@@ -50,8 +54,11 @@ class MyGamesScreen extends Component {
     }
 
     componentDidMount() {
-        const allGames = whistStore.getAllGames()
-        this.setState({allGamesObj: allGames})
+        this.getAllGamesFromStorage()
+
+        // const allGames = whistStore.getAllGames()
+        // this.setState({allGamesObj: allGames})
+
         // allGamesActions.fetchWhistGame();
     }
 
@@ -65,13 +72,20 @@ class MyGamesScreen extends Component {
     }
 
 
+    getAllGamesFromStorage = async () => {
+        const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
+        const allGames = JSON.parse(allGamesString);
+        this.setState({allGames})
+        console.log(JSON.stringify(allGames))
+    }
+
 
     render() {
         return (
             <View flex bg-yellow30 center>
                 <Text>MY GAMES SCREEN</Text>
-                <Text>{`allGamesObj:\n${this.state.allGamesObj}`}</Text>
-
+                <Text>    </Text>
+                <Text>{`allGamesObj:\n${JSON.stringify(this.state.allGames) || 'LOADING'}`}</Text>
             </View>
         );
     }
