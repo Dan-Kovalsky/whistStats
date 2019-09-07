@@ -71,6 +71,14 @@ class TableScreen extends Component {
         })
     }
 
+    getDateStr = date => {
+        return date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear()%100
+    }
+    // getTmeStr = date => {
+    //     return date.getHours() + ':' get
+    // }
+
+
     addGameToStorage = async () => {
         try {
             let allGames = []
@@ -78,8 +86,10 @@ class TableScreen extends Component {
             if (allGamesString !== null) {
                 allGames = JSON.parse(allGamesString)
             }
-            const objectToAdd = {
-                gameStartTime : this.props.gameStartTime,
+             const objectToAdd = {
+                gameStartTimeObj : this.props.gameStartTime,
+                gameStartDateStr : this.getDateStr(this.props.gameStartTime),
+                gameStartTimeStr : this.getTimeStr(0, this.props.gameStartTime),
                 playerNamesObj: this.props.allNames,
                 playingTimeStr: this.getTimeStr(this.props.gameStartTime, new Date()),
                 roundsHistory : this.state.roundsHistory

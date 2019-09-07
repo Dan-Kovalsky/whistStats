@@ -35,7 +35,19 @@ export const TABLE_SCREEN_COLORS = {
     BID_CUBES_STAND_BG: c.green60,
     BID_CUBES_FAIL_BG: c.red60,
     RESULTS_CUBES_ROW_5_BG: c.green40
-}
+};
+
+export const MY_GAMES_SCREEN_COLORS = {
+    BG: c.blue80,
+    INFO_CUBES_BG: c.yellow90,
+    INFO_CUBES_BORDER: c.black,
+    RESULTS_CUBES_BG: c.white,
+    RESULTS_CUBES_BORDER: c.black,
+    RESULTS_CUBES_ROW_5_BG: c.green40,
+    WINNER_CUBE_BG: c.green50,
+    LOOSER_CUBE_BG: c.red60,
+    MIDDLE_CUBE_BG: c.yellow80,
+};
 
 
 export const SHAPE_BTN_COLORS = {
