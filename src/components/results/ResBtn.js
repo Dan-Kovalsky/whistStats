@@ -39,7 +39,6 @@ export default class ResBtn extends Component {
                     round
                     label={this.props.num.toString()}
                     size='xSmall'
-                    // borderRadius={40}
                     text70
                     labelStyle={{fontWeight: 'bold'}}
                     style={{width: 20, height: 40}}
@@ -56,9 +55,8 @@ export default class ResBtn extends Component {
                 round
                 label={this.props.num.toString()}
                 size='xSmall'
-                // borderRadius={40}
                 text90
-                labelStyle={{fontWeight: 'bold'}}
+                labelStyle={{fontWeight: 'bold', fontSize: 11}}
                 style={{width:20, height:40}}
                 // ref={element => (this.button_0 = element)}
                 onPress={() => this.props.whenResBtnPressed(this.props.location, this.props.num)}

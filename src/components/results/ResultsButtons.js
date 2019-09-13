@@ -54,7 +54,8 @@ export default class ResultsButtons extends Component {
                 <TextField
                     centered
                     text90
-                    titleColor={clr.TEXT}
+                    style={{fontWeight: 'bold', color: clr.TEXT}}
+                    // titleColor={clr.TEXT}
                     containerStyle={{height:40, width:25, backgroundColor: this.bgColor()}}
                     placeholder={'*'}
                     value={this.state.textVal}
