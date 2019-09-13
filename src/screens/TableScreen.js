@@ -113,7 +113,7 @@ class TableScreen extends Component {
         this.showGamesHistoryScreen();
     };
 
-    alertEndGameDialogAndSave = () => {
+    alertEndGameDialog = () => {
         if (this.state.roundsHistory.length > 0) {
             Alert.alert(
                 'Finish Game',
@@ -122,7 +122,7 @@ class TableScreen extends Component {
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
                     // {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
                     {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
-                    {text: 'Delete', onPress: () => Alert.alert("Kill the app to start new game!")},
+                    {text: 'Delete', onPress: () => this.alertBeforeRestart()},
                 ],
                 {cancelable: false},
             );
@@ -144,7 +144,7 @@ class TableScreen extends Component {
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
                     {text: 'OK', onPress: () => this.deleteLastRound()},
                 ],
-                {cancelable: false},
+                {cancelable: true},
             );
         }
     };
@@ -193,7 +193,7 @@ class TableScreen extends Component {
                 {text: 'Cancel', onPress: () => {}, style: 'cancel'},
                 {text: 'OK', onPress: () => {this.popToRootAndDeleteGame()}}
             ],
-            {cancelable: false},
+            {cancelable: true},
         );
     };
 
@@ -365,7 +365,7 @@ class TableScreen extends Component {
                         text80
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
-                        onPress={this.alertEndGameDialogAndSave}
+                        onPress={this.alertEndGameDialog}
                     />
                 </View>
                 {this.renderTimeFromStart()}

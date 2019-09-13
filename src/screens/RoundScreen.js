@@ -85,6 +85,20 @@ class RoundScreen extends Component {
         // this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
 
+    alertDeleteDialog = () => {
+        Alert.alert(
+            'Delete Last Round',
+            'Are you sure?',
+            [
+                {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+                {text: 'OK', onPress: () => this.deleteLastRound()},
+            ],
+            {cancelable: true},
+        );
+
+    };
+
+
     deleteLastRound = () => {
         roundsHistory.pop();
         const roundNumber = this.state.roundNumber - 1;
@@ -108,7 +122,7 @@ class RoundScreen extends Component {
             roundNumber,
             points,
             curSequence
-        })
+        }, () => this.changeScreenTitle())
     };
 
     pushTableScreen = () => {
@@ -174,12 +188,25 @@ class RoundScreen extends Component {
                 this.uploadBiddings();
                 this.changeScreenTitle();
             }
-
         }
     }
 
-    uploadResults() {
-        this.pushTableScreen()      //TODO maybe I dont want it to jump always
+    alertEndRoundDialog() {
+        Alert.alert(
+            `Round ${this.state.roundNumber} Finished`,
+            '',
+            [
+                {text: 'Delete Round', onPress: () => {
+                    this.alertDeleteDialog();
+                    // this.deleteLastRound();
+                    }
+                },
+                {text: 'Show Table', onPress: () => {this.pushTableScreen()}},
+                {text: 'Play Next Round', onPress: () => {}}
+            ],
+            {cancelable: true},
+        );
+
     }
 
     changeScreenTitle = () => {
@@ -221,7 +248,7 @@ class RoundScreen extends Component {
                     return false;
                 }}
             ],
-            {cancelable: false},
+            {cancelable: true},
         );
     };
 
@@ -402,7 +429,7 @@ class RoundScreen extends Component {
                         });
                         this.setState(this.initiateNewBidState(),
                             () => this.changeScreenTitle());
-                        this.uploadResults();
+                        this.alertEndRoundDialog();
 
                     })
                 })
