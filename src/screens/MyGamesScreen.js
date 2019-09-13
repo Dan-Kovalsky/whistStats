@@ -88,6 +88,25 @@ class MyGamesScreen extends Component {
         console.log(JSON.stringify(allGames))
     };
 
+    openOldGameTable = (gameObject) => {
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name: 'whistStats.OldGameTableScreen',
+                        passProps: {
+                            roundsHistory: gameObject.roundsHistory,
+                            allNames: gameObject.playerNamesObj,
+                            gameStartDateStr: gameObject.gameStartDateStr,
+                            playingTimeStr: gameObject.playingTimeStr,
+                        }
+                    }
+                }]
+            }
+        });
+
+    }
+
     getUpsDownsStr = roundsHistory => {
         const downs = roundsHistory.reduce(
             (accumulator, round) => accumulator + (round.upDown < 0 ? 1 : 0)
@@ -178,10 +197,9 @@ class MyGamesScreen extends Component {
         )
     };
 
-
-    renderLine = item => {
+    renderLine = (item) => {
         return (
-            <TouchableOpacity row style={{height: 150}}>
+            <TouchableOpacity row style={{height: 150}} onPress={() => this.openOldGameTable(item.item)}>
                 {this.renderInfoCube(item.item)}
                 {this.renderResCube(item.item, 'north')}
                 {this.renderResCube(item.item, 'west')}
