@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, View, TextField,Colors} from 'react-native-ui-lib';
-import {NAME_INPUT_COLORS as clr, NEW_GAME_SCREEN_BG} from "../constants/styles/Colors";
+import {View, TextField,Colors} from 'react-native-ui-lib';
+import {NAME_INPUT_COLORS as clr} from "../constants/styles/Colors";
 import PropTypes from 'prop-types';
 
 export default class NameInput extends Component {

@@ -5,4 +5,5 @@ export function registerScreens() {
     Navigation.registerComponent('whistStats.RoundScreen', () => require('./screens/RoundScreen').default);
     Navigation.registerComponent('whistStats.TableScreen', () => require('./screens/TableScreen').default);
     Navigation.registerComponent('whistStats.MyGamesScreen', () => require('./screens/MyGamesScreen').default);
+    Navigation.registerComponent('whistStats.StatisticsScreen', () => require('./screens/StatisticsScreen').default);
 }

@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 
-const SCREEN_WIDTH = Dimensions.get('screen').width
+const SCREEN_WIDTH = Dimensions.get('screen').width;
 const CUBE_WIDTH = SCREEN_WIDTH / 11;
 
 class TableScreen extends Component {
@@ -32,7 +32,7 @@ class TableScreen extends Component {
     constructor(props) {
         super(props);
         Navigation.events().bindComponent(this);
-        this.backToGameScreen.bind(this.backToGameScreen)
+        this.backToGameScreen.bind(this.backToGameScreen);
 
         this.state = {
             allGamesObj : {},
@@ -48,7 +48,11 @@ class TableScreen extends Component {
                         id: 'backToGame',
                         text: 'Back'
                     },
-                ]
+                ],
+                title: {
+                    text: `Game Table`
+                }
+
             },
             layout: {
                 orientation: ['portrait'],
@@ -63,7 +67,7 @@ class TableScreen extends Component {
     }
 
     componentWillMount(){
-        this.props.allGamesObj = whistStore.getAllGames()
+        this.props.allGamesObj = whistStore.getAllGames();
         allGamesActions.fetchWhistGame();
 
         this.setState({
@@ -73,7 +77,7 @@ class TableScreen extends Component {
 
     getDateStr = date => {
         return date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear()%100
-    }
+    };
     // getTmeStr = date => {
     //     return date.getHours() + ':' get
     // }
@@ -81,7 +85,7 @@ class TableScreen extends Component {
 
     addGameToStorage = async () => {
         try {
-            let allGames = []
+            let allGames = [];
             const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
             if (allGamesString !== null) {
                 allGames = JSON.parse(allGamesString)
@@ -93,21 +97,21 @@ class TableScreen extends Component {
                 playerNamesObj: this.props.allNames,
                 playingTimeStr: this.getTimeStr(this.props.gameStartTime, new Date()),
                 roundsHistory : this.state.roundsHistory
-            }
-            allGames.push(objectToAdd)
+            };
+            allGames.push(objectToAdd);
             await AsyncStorage.setItem(ALL_GAMES_KEY, JSON.stringify(allGames));
         } catch (error) {
 
             // Error retrieving data
             console.log(error.message);
         }
-    }
+    };
 
     saveGameAndOpenMyGames = async () => {
         await this.addGameToStorage();
         // await whistStore.addNewGame([this.props.roundsHistory]);
         this.showGamesHistoryScreen();
-    }
+    };
 
     alertEndGameDialogAndSave = () => {
         if (this.state.roundsHistory.length > 0) {
@@ -123,13 +127,13 @@ class TableScreen extends Component {
                 {cancelable: false},
             );
         }
-    }
+    };
 
     deleteLastRound = () => {
-        this.props.deleteLastRound()
-        const roundsHistory = this.state.roundsHistory.slice(0, -1)
+        this.props.deleteLastRound();
+        const roundsHistory = this.state.roundsHistory.slice(0, -1);
         this.setState({roundsHistory})
-    }
+    };
 
     alertDeleteDialog = () => {
         if (this.state.roundsHistory.length > 0) {
@@ -151,7 +155,7 @@ class TableScreen extends Component {
         // const diffStr = `${hours < 10 ? '0'+hours : hours}:${minutes < 10 ? '0'+minutes : minutes}`;
         // return <Text>{`Playing Time: ${diffStr}`}</Text>
         return <Text>{`Playing Time: ${this.getTimeStr(this.props.gameStartTime, new Date())}`}</Text>
-    }
+    };
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'backToGame') {
@@ -176,10 +180,10 @@ class TableScreen extends Component {
                 }]
             }
         });
-    }
+    };
     gamesHistoryBtnPressed = () => {
         this.showGamesHistoryScreen();
-    }
+    };
 
     alertBeforeRestart = () =>{
         Alert.alert(
@@ -191,12 +195,27 @@ class TableScreen extends Component {
             ],
             {cancelable: false},
         );
-    }
+    };
 
     popToRootAndDeleteGame = async () => {
-        await this.props.popScreenAndDeleteGame()
+        await this.props.popScreenAndDeleteGame();
         Navigation.dismissModal(this.props.componentId)
-    }
+    };
+
+    statisticsBtnPressed = () => {
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name: 'whistStats.StatisticsScreen',
+                        passProps: {
+                            somePropToPass: 'Some props - Table from DB',
+                        }
+                    }
+                }]
+            }
+        })
+    };
 
 
     renderTitleCube = (str) => {
@@ -205,14 +224,14 @@ class TableScreen extends Component {
                 <Text style={{fontSize: 10}}>{str}</Text>
             </View>
         )
-    }
+    };
     renderNameCube = (str) => {
         return (
             <View center style={{height: 40, width: CUBE_WIDTH*2, backgroundColor: clr.TITLE_CUBES_BG,  borderColor: clr.TITLE_CUBES_BORDER, borderWidth:1}}>
                 <Text style={{fontSize: 15}}>{str}</Text>
             </View>
         )
-    }
+    };
 
     renderTitle = () => {
         return(
@@ -226,7 +245,7 @@ class TableScreen extends Component {
                 {this.renderNameCube(this.props.allNames.eastName)}
             </View>
         )
-    }
+    };
 
     renderRoundNumCube = (item) => {
         return (
@@ -236,16 +255,16 @@ class TableScreen extends Component {
                 {/*{item.isRoundFail ? <Text>{Assets.emojis.boom}</Text> : undefined}*/}
             </View>
         )
-    }
+    };
     renderUpDownCube = (item) => {
-        const str = item.upDown > 0 ? Assets.emojis.heavy_plus_sign + item.upDown : Assets.emojis.heavy_minus_sign + item.upDown*(-1)
+        const str = item.upDown > 0 ? Assets.emojis.heavy_plus_sign + item.upDown : Assets.emojis.heavy_minus_sign + item.upDown*(-1);
         return (
             <View center style={{height: 50, width: CUBE_WIDTH, borderColor: clr.RESULTS_CUBES_BORDER, backgroundColor: clr.RESULTS_CUBES_BG, borderWidth:1}}>
                 <Text>{str}</Text>
                 <Text>{item.isRoundFail ? Assets.emojis.boom : ' '}</Text>
             </View>
         )
-    }
+    };
     renderTrumpCube = (item) => {
         return (
             <View center style={{height: 50, width: CUBE_WIDTH, borderColor: clr.RESULTS_CUBES_BORDER, backgroundColor: clr.RESULTS_CUBES_BG, borderWidth:1}}>
@@ -253,25 +272,25 @@ class TableScreen extends Component {
                 <Text>{item.isRoundFail ? Assets.emojis.boom : ' '}</Text>
             </View>
         )
-    }
+    };
 
     bgForBidCube = (item, location) => {
         if (item.isStand[location]) {
             return clr.BID_CUBES_STAND_BG
         }
         return clr.BID_CUBES_FAIL_BG
-    }
+    };
     bgForResCube = (item, location) => {
-        const seq = item.curSequence[location]
+        const seq = item.curSequence[location];
         if (seq > 0 && seq % 5 === 0) {
             return clr.RESULTS_CUBES_ROW_5_BG
         }
         return clr.RESULTS_CUBES_BG
-    }
+    };
 
     renderResCube = (item, location) => {
         const difference = item.results[location]-item.biddings[location];
-        const sequence = item.curSequence[location]
+        const sequence = item.curSequence[location];
         return (
             <View row>
                 <View center style={{height: 50, width: CUBE_WIDTH*2*0.25, borderColor:clr.RESULTS_CUBES_BORDER, borderWidth:1, borderRightWidth:0.4, borderRightColor:clr.BID_CUBES_BOUNDARY_LINE, backgroundColor:this.bgForBidCube(item, location)}}>
@@ -286,27 +305,26 @@ class TableScreen extends Component {
                         (sequence > 0 && sequence % 5 === 0 ? Assets.emojis.tada : ' ')
                     }</Text>
                 </View>
-
             </View>
         )
-    }
+    };
 
     getTimeStr = (start, end) => {
-        const difference = Math.abs(end-start)
+        const difference = Math.abs(end-start);
         const hours = parseInt(difference / (1000 * 60 * 60) % 24);
         const minutes = parseInt(difference / (1000 * 60) % 60);
         const seconds = parseInt(difference / (1000) % 60);
-        const hoursStr = hours < 10 ? '0'+hours :hours
-        const minutesStr = minutes < 10 ? '0'+minutes : minutes
-        const secondsStr = seconds < 10 ? '0' + seconds : seconds
+        const hoursStr = hours < 10 ? '0'+hours :hours;
+        const minutesStr = minutes < 10 ? '0'+minutes : minutes;
+        const secondsStr = seconds < 10 ? '0' + seconds : seconds;
         return`${hoursStr}:${minutesStr}:${secondsStr}`;
         // return`${minutes < 10 ? '0'+minutes : minutes}:${seconds < 10 ? '0'+seconds : seconds}`;
-    }
+    };
 
     showRoundInfo = (item) => () => {
         Alert.alert(`Round ${item.roundNumber}`,
             `Bidding Time: ${this.getTimeStr(item.startBidTime, item.startRoundTime)}\nPlaying time: ${this.getTimeStr(item.startRoundTime, item.endRoundTime)}`)
-    }
+    };
 
     renderLine = item => {
         return (
@@ -320,7 +338,7 @@ class TableScreen extends Component {
                 {this.renderResCube(item.item, 'east')}
             </TouchableOpacity>
         )
-    }
+    };
 
     renderFooter = () => {
         return (
@@ -362,12 +380,11 @@ class TableScreen extends Component {
                         text80
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
-                        // onPress={()=>alert("WIP, soon you will get your history")}
                         onPress={this.gamesHistoryBtnPressed}
                     />
                     <Button
                         backgroundColor={'pink'}
-                        color={'white'}
+                        color={'black'}
                         label={'Restart game'}
                         size="small"
                         borderRadius={50}
@@ -377,9 +394,20 @@ class TableScreen extends Component {
                         onPress={this.alertBeforeRestart}
                     />
                 </View>
+                <Button
+                    backgroundColor={'magenta'}
+                    color={'white'}
+                    label={'statistics'}
+                    size="small"
+                    borderRadius={50}
+                    text80
+                    labelStyle={{fontWeight: 'bold'}}
+                    style={{width:170, height:30, margin:10}}
+                    onPress={this.statisticsBtnPressed}
+                />
             </View>
         )
-    }
+    };
 
 
     render() {

@@ -4,7 +4,7 @@ export const BID_BTN_COLORS = {
     TEXT: c.purple10,
     PRESSED_BG: c.orange50,
     UNPRESSED_BG: c.orange60,
-}
+};
 
 export const RESULST_BTN_COLORS = {
     TEXT: c.purple10,
@@ -12,19 +12,17 @@ export const RESULST_BTN_COLORS = {
     FAIL_UNPRESSED_BG: c.red60,
     STAND_PRESSED_BG: c.green10,
     STAND_UNPRESSED_BG: c.green50
-}
-export const BID_RES_COMPONENT_BG = c.orange70
-// export const RESULTS_COMPONENT_BG = colors.blue30
+};
+export const BID_RES_COMPONENT_BG = c.orange70;
 
-
-export const NEW_GAME_SCREEN_BG = c.blue70
+export const NEW_GAME_SCREEN_BG = c.blue70;
 export const ROUND_SCREEN_COLORS = {
     BG: c.blue70,
     START_ROUND_BTN_BG: c.blue40,
     END_ROUND_BTN_BG: c.blue40,
     START_ROUND_BTN_TEXT: c.purple10,
     END_ROUND_BTN_TEXT: c.purple10
-}
+};
 export const TABLE_SCREEN_COLORS = {
     BG: c.blue70,
     TITLE_CUBES_BG: c.yellow80,
@@ -53,7 +51,7 @@ export const MY_GAMES_SCREEN_COLORS = {
 export const SHAPE_BTN_COLORS = {
     PRESSED_BG: c.orange50,
     UNPRESSED_BG: c.orange60
-}
+};
 
 
 export const NAME_INPUT_COLORS = {
@@ -62,7 +60,7 @@ export const NAME_INPUT_COLORS = {
     PLACE_HOLDER_TEXT: c.dark60,
     BG: c.red70,
     UNDER_LINE_FOCUS: c.purple50
-}
+};
 
 export const NAME_LABEL_COLORS = {
     NUM_MINUS: c.red20,
@@ -70,10 +68,10 @@ export const NAME_LABEL_COLORS = {
     NUM_PLUS: c.green20,
     NAME: c.black,
     BG: c.red70,
-}
+};
 
 export const BID_RES_INFO_COLORS = {
     BG: undefined,
     BORDER: c.black,
     TEXT: c.black
-}
+};

@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {FlatList, Alert, Dimensions} from 'react-native';
-import {Text, View, Button, Assets, TouchableOpacity} from 'react-native-ui-lib';
+import {Text, View, Assets, TouchableOpacity} from 'react-native-ui-lib';
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
@@ -9,7 +9,7 @@ import {MY_GAMES_SCREEN_COLORS as clr} from "../constants/styles/Colors";
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 
-const SCREEN_WIDTH = Dimensions.get('screen').width
+const SCREEN_WIDTH = Dimensions.get('screen').width;
 const CUBE_WIDTH = SCREEN_WIDTH / 19;
 
 
@@ -20,7 +20,7 @@ class MyGamesScreen extends Component {
     constructor(props) {
         super(props);
         Navigation.events().bindComponent(this);
-        this.backBtnPressed.bind(this.backBtnPressed)
+        this.backBtnPressed.bind(this.backBtnPressed);
 
         this.state = {
             allGamesObj: [],
@@ -38,7 +38,11 @@ class MyGamesScreen extends Component {
                         id: 'back',
                         text: 'Back'
                     },
-                ]
+                ],
+                title: {
+                    text: `Games History`
+                }
+
             },
             layout: {
                 orientation: ['portrait'],
@@ -80,7 +84,7 @@ class MyGamesScreen extends Component {
     getAllGamesFromStorage = async () => {
         const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
         const allGames = JSON.parse(allGamesString);
-        this.setState({allGames})
+        this.setState({allGames});
         console.log(JSON.stringify(allGames))
     };
 
@@ -104,7 +108,7 @@ class MyGamesScreen extends Component {
         roundsHistory.forEach(round => {
             let curShape = round.chosenTrump;
             shapesCount[curShape]++
-        })
+        });
         // return `${shapesCount.spades}${Assets.emojis.spades}  ${shapesCount.hearts}${Assets.emojis.hearts}
         //         \n${shapesCount.diamonds}${Assets.emojis.diamonds}  ${shapesCount.clubs}${Assets.emojis.clubs}`
         return (
@@ -113,7 +117,7 @@ class MyGamesScreen extends Component {
                 <Text style={{fontSize: 9}}>{`${shapesCount.diamonds}${Assets.emojis.diamonds}  ${shapesCount.clubs}${Assets.emojis.clubs}`}</Text>
             </View>
         )
-    }
+    };
 
     renderInfoCube = (item) => {
         return (
@@ -128,23 +132,23 @@ class MyGamesScreen extends Component {
             </View>
 
         )
-    }
+    };
 
     countRoundsStands = (roundsHistory, location) => {
         return roundsHistory.reduce((accumulator, round) => {
             return accumulator + (round.isStand[location] ? 1 : 0);
         }, 0);
-    }
+    };
 
     countBets = (roundsHistory, location) => {
         return roundsHistory.reduce((accumulator, round) => {
             return accumulator + (round.didBet[location] ? 1 : 0);
         }, 0);
-    }
+    };
 
     getMaxSequence = (roundsHistory, location) => {
         return Math.max(...roundsHistory.map(round => round.curSequence[location]), 0);
-    }
+    };
 
     bgForResCube = (item, location) => {
         const numberOfRounds = item.roundsHistory.length;
@@ -159,7 +163,7 @@ class MyGamesScreen extends Component {
         } else {
             return clr.MIDDLE_CUBE_BG
         }
-    }
+    };
 
     renderResCube = (item, location) => {
         const numberOfRounds = item.roundsHistory.length;
@@ -172,7 +176,7 @@ class MyGamesScreen extends Component {
                 <Text>{`${this.getMaxSequence(item.roundsHistory, location)} in a row`}</Text>
             </View>
         )
-    }
+    };
 
 
     renderLine = item => {
@@ -185,7 +189,7 @@ class MyGamesScreen extends Component {
                 {this.renderResCube(item.item, 'east')}
             </TouchableOpacity>
         )
-    }
+    };
 
     render() {
         return (

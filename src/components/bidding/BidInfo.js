@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Text, View, TextField,Colors, Button} from 'react-native-ui-lib';
+import {Text, View} from 'react-native-ui-lib';
 import {BID_RES_INFO_COLORS as clr} from "../../constants/styles/Colors";
 
 import PropTypes from 'prop-types';

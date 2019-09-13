@@ -19,8 +19,7 @@ const instructions = Platform.select({
 
 async function fetchPlayers() {
   const response = await fetch('http://localhost:3000/Players');
-  const players = await response.json();
-  return players
+  return await response.json()
   // postsStore.setPosts(posts);
 }
 

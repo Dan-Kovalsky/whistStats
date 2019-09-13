@@ -29,19 +29,17 @@ const setters = remx.setters({
         try {
             const allGamesString =  await AsyncStorage.getItem("ALL_GAMES_KEY");
             if (allGamesString) {
-                alert("DANKOV INSIDE IF" + allGamesString)
-                const allGamesJson = JSON.parse(allGamesString);
-                state.games = allGamesJson;
+                alert("DANKOV INSIDE IF" + allGamesString);
+                state.games = JSON.parse(allGamesString);
             }
         } catch (error) {
             console.warn(error.message);
         }
-        return
     },
 
     async addNewGame(gameAsJson) {
-        state.games.push(gameAsJson)
-        console.warn('DANKOV inAddNewGame gameAsJson = '  + gameAsJson)
+        state.games.push(gameAsJson);
+        console.warn('DANKOV inAddNewGame gameAsJson = '  + gameAsJson);
         try {
             // await AsyncStorage.setItem("ALL_GAMES_KEY", "DAN kovalsky str")
             await AsyncStorage.setItem("ALL_GAMES_KEY", JSON.stringify(state.games))
@@ -51,7 +49,7 @@ const setters = remx.setters({
     },
 
     async deleteGameByIndex(index) {
-        state.games.splice(index, 1)
+        state.games.splice(index, 1);
         try {
             await AsyncStorage.setItem("ALL_GAMES_KEY", JSON.stringify(state.games))
         } catch (error) {
@@ -67,9 +65,9 @@ const setters = remx.setters({
     // setResult(GameIdx, roundIdx, resultLst){
     //     state.games[gameNum].rounds[roundIdx].results = resultLst;
     // }
-})
+});
 
 export const whistStore = {
     ...getters,
     ...setters
-}
+};
