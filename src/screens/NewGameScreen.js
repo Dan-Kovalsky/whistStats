@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {TouchableWithoutFeedback, Keyboard, ScrollView, FlatList, Alert} from 'react-native';
-import {View, Text, TouchableOpacity, Assets, TextField, Button} from 'react-native-ui-lib';
+import {TouchableWithoutFeedback, Keyboard, FlatList, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, Assets, TextField, Button, Colors} from 'react-native-ui-lib';
 
 import NameInput from './../components/NameInput'
 
@@ -224,16 +224,14 @@ class NewGameScreen extends Component {
 
     renderLine = (item) => {
         return (
-            <TouchableOpacity style={{height:30}} flex spread row>
-                <Text>{item.item.name}</Text>
-                <TouchableOpacity onPress={ () => this.alertDeleteNameDialog(item.item.name)
-                    // () =>this.deleteNameFromOptionals(item.item.name)
-                    // console.warn("Delete " + item.item.name)
-                    // console.warn("Delete index " + item.index)}
-                }
-                >
-                    <Text>{`Delete ${Assets.emojis.no_entry}`}</Text>
-                </TouchableOpacity>
+            <TouchableOpacity>
+                <View style={{height:20}} flex spread row>
+                    <Text>{item.item.name}</Text>
+                    <TouchableOpacity onPress={() => this.alertDeleteNameDialog(item.item.name)}>
+                        <Text>{`Del ${Assets.emojis.no_entry}`}</Text>
+                    </TouchableOpacity>
+                </View>
+                <View flex style={{borderWidth: 0.5, borderColor: 'grey'}}/>
             </TouchableOpacity>
         )
     };
@@ -245,7 +243,6 @@ class NewGameScreen extends Component {
                     maxHeight={200}
                     keyExtractor={(item) => item.name}
                     renderItem={this.renderLine}
-                    // ListFooterComponent={this.renderFooter}
                 />
         );
     };
@@ -267,8 +264,8 @@ class NewGameScreen extends Component {
 
     alertDeleteNameDialog = (name) => {
         Alert.alert(
-            `Deleting ${name} from list`,
-            `Are youSure?`,
+            `Deleting "${name}" from list`,
+            `Are You Sure?`,
             [
                 {text: 'Cancel', onPress: () => {}, style: 'cancel'},
                 {text: 'Ok', onPress: () => this.deleteNameFromOptionals(name)},
@@ -279,7 +276,40 @@ class NewGameScreen extends Component {
 
     onChangeNewNameText = (newName) => {
         const newNameErrorMsg = this.getErrorMessageForNewName(newName);
-        this.setState({newNameErrorMsg})
+        this.setState({
+            newNameErrorMsg,
+            newName
+        })
+    };
+
+    statisticsBtnPressed = () => {
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name: 'whistStats.StatisticsScreen',
+                        passProps: {
+                            somePropToPass: 'Some props - Table from DB',
+                        }
+                    }
+                }]
+            }
+        })
+    };
+
+    gamesHistoryBtnPressed = () => {
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name: 'whistStats.MyGamesScreen',
+                        passProps: {
+                            somePropToPass: 'Some props - Table from DB',
+                        }
+                    }
+                }]
+            }
+        });
     };
 
     render() {
@@ -296,23 +326,21 @@ class NewGameScreen extends Component {
                             </View>
                             <NameInput text={this.state.names.southName} errorMsg={this.state.nameErrorMsg.south} position='My Name' onChangeText={this.onSChanged}/>
                         </View>
-
                         :
                         <Text>Add at least four names to the list</Text>
                     }
-                    <View style={{height:200, width: 150, borderWidth:2, borderColor:'black', marginTop: 20}}>
+                    <View style={{height:200, width: 120, borderWidth:1, borderColor:'black', marginTop: 20, backgroundColor: Colors.yellow80}}>
                         {this.state.addingName ?
                             <View>
                                 <TextField
                                     text80
-                                    style={{lineHeight: 20}}
+                                    style={{lineHeight: 30}}
                                     containerStyle={{marginBottom: 1}}
                                     placeholder="New Name"
                                     maxLength={9}
                                     showCharacterCounter
                                     onChangeText={this.onChangeNewNameText}
                                     error={this.state.newNameErrorMsg}
-                                    // useTopErrors={this.state.topError}
                                 />
                                 <Button
                                     backgroundColor={'green'}
@@ -331,7 +359,34 @@ class NewGameScreen extends Component {
                                 <Text>{`${Assets.emojis.heavy_plus_sign} Add Name`}</Text>
                             </TouchableOpacity>
                         }
+                        <View center>
+                            <Text style={{fontWeight:'bold', textDecorationLine:'underline'}}>All Names</Text>
+                        </View>
                         {this.renderFlatList()}
+                    </View>
+                    <View row>
+                        <Button
+                            backgroundColor={'green'}
+                            color={'white'}
+                            label={'Games History'}
+                            size="small"
+                            borderRadius={50}
+                            text80
+                            labelStyle={{fontWeight: 'bold'}}
+                            style={{width:170, height:30, margin:10}}
+                            onPress={this.gamesHistoryBtnPressed}
+                        />
+                        <Button
+                            backgroundColor={'magenta'}
+                            color={'white'}
+                            label={'statistics'}
+                            size="small"
+                            borderRadius={50}
+                            text80
+                            labelStyle={{fontWeight: 'bold'}}
+                            style={{width:170, height:30, margin:10}}
+                            onPress={this.statisticsBtnPressed}
+                        />
                     </View>
                 </View>
              </TouchableWithoutFeedback>
