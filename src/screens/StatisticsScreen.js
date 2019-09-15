@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {FlatList, ScrollView, Dimensions} from 'react-native';
-import {Text, View, Colors, Assets, Card, LoaderScreen} from 'react-native-ui-lib';
+import {Text, View, Colors, Assets, Card, LoaderScreen, StateScreen} from 'react-native-ui-lib';
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
@@ -23,6 +23,7 @@ class StatisticsScreen extends Component {
 
         this.state = {
             loading: true,
+            isGamesDataEmpty: false,
             allGamesObj: [],
             allGames: [],
             roundsHistory: this.props.roundsHistory,
@@ -89,8 +90,12 @@ class StatisticsScreen extends Component {
 
     getAllGamesFromStorage = async () => {
         const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
-        const allGames = JSON.parse(allGamesString);
-        await this.setState({allGames});
+        if (allGamesString === null) {
+            this.setState({isGamesDataEmpty: true})
+        } else {
+            const allGames = JSON.parse(allGamesString);
+            await this.setState({allGames});
+        }
     };
 
     calcStandsPercentage = () => {
@@ -428,6 +433,16 @@ class StatisticsScreen extends Component {
     };
 
     render() {
+        if (this.state.isGamesDataEmpty) {
+            return (
+                <StateScreen
+                    imageSource={require('../assets/WhistStatsLogo_web_hi_res_512.png')}
+                    title='Sorry'
+                    subtitle='No games were found'
+                    ctaLabel='BACK'
+                    onCtaPress={() => Navigation.dismissModal(this.props.componentId)}/>
+            )
+        }
         return (
             <View flex style={{backgroundColor:'cyan'}}>
                 <ScrollView style>
@@ -497,7 +512,6 @@ class StatisticsScreen extends Component {
         );
     }
 }
-
 
 function mapStateToProps() {
     return {

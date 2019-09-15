@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {FlatList, Alert, Dimensions} from 'react-native';
-import {Text, View, Assets, TouchableOpacity} from 'react-native-ui-lib';
+import {FlatList, Dimensions} from 'react-native';
+import {Text, View, Assets, TouchableOpacity, StateScreen} from 'react-native-ui-lib';
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
@@ -25,7 +25,8 @@ class MyGamesScreen extends Component {
         this.state = {
             allGamesObj: [],
             allGames: [],
-            roundsHistory: this.props.roundsHistory
+            roundsHistory: this.props.roundsHistory,
+            isGamesDataEmpty: false
         }
     }
 
@@ -83,9 +84,12 @@ class MyGamesScreen extends Component {
 
     getAllGamesFromStorage = async () => {
         const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
-        const allGames = JSON.parse(allGamesString);
-        this.setState({allGames});
-        console.log(JSON.stringify(allGames))
+        if (allGamesString === null) {
+            this.setState({isGamesDataEmpty: true})
+        } else {
+            const allGames = JSON.parse(allGamesString);
+            this.setState({allGames});
+        }
     };
 
     openOldGameTable = (gameObject) => {
@@ -210,6 +214,16 @@ class MyGamesScreen extends Component {
     };
 
     render() {
+        if (this.state.isGamesDataEmpty) {
+            return (
+                <StateScreen
+                    imageSource={require('../assets/WhistStatsLogo_web_hi_res_512.png')}
+                    title='Sorry'
+                    subtitle='No games were found'
+                    ctaLabel='BACK'
+                    onCtaPress={() => Navigation.dismissModal(this.props.componentId)}/>
+            )
+        }
         return (
             <View flex style={{backgroundColor: clr.BG}}>
                 {/*{this.renderTitle()}*/}
