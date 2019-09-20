@@ -29,6 +29,7 @@ class StatisticsScreen extends Component {
             roundsHistory: this.props.roundsHistory,
             allPlayersPercentage: {},
             biddingsDistribution: [],
+            standsPerBidding: [],
             trumpsDistribution: {
                 // spades: 0,
                 // hearts: 0,
@@ -72,10 +73,12 @@ class StatisticsScreen extends Component {
 
     componentDidMount() {
         this.getAllGamesFromStorage().then(() => {
+            // console.log("ALL GAMES\n" + JSON.stringify(this.state.allGames))
                 // const allPlayersPercentage = this.calcStandsPercentage();
                 this.setState({
                     allPlayersPercentage: this.calcStandsPercentage(),
                     biddingsDistribution: this.calcBiddingsDistribution(),
+                    standsPerBidding: this.calcStandsPerBidding(),
                     trumpsDistribution: this.calcTrumpsDistribution()},
                     () =>{this.setState({loading: false})}
                     );
@@ -110,6 +113,7 @@ class StatisticsScreen extends Component {
                                 standsCount: 0,
                                 failCount: 0,
                                 betCount: 0,
+                                betAndStandsCount: 0,
                                 gamesRanking: [0,0,0,0],
                                 sumOfPoints: 0
                             }
@@ -139,30 +143,42 @@ class StatisticsScreen extends Component {
                         // }
                         if (round.didBet.north) {
                             playerRoundsMap[game.playerNamesObj.northName].betCount++;
+                            if (round.isStand.north) {
+                                playerRoundsMap[game.playerNamesObj.northName].betAndStandsCount++;
+                            }
                         }
 
                         round.isStand.west ? playerRoundsMap[game.playerNamesObj.westName].standsCount++ :
                             playerRoundsMap[game.playerNamesObj.westName].failCount++;
                         if (round.didBet.west) {
                             playerRoundsMap[game.playerNamesObj.westName].betCount++;
+                            if (round.isStand.west) {
+                                playerRoundsMap[game.playerNamesObj.westName].betAndStandsCount++;
+                            }
                         }
 
                         round.isStand.east ? playerRoundsMap[game.playerNamesObj.eastName].standsCount++ :
                             playerRoundsMap[game.playerNamesObj.eastName].failCount++;
                         if (round.didBet.east) {
                             playerRoundsMap[game.playerNamesObj.eastName].betCount++;
+                            if (round.isStand.east) {
+                                playerRoundsMap[game.playerNamesObj.eastName].betAndStandsCount++;
+                            }
                         }
 
                         round.isStand.south ? playerRoundsMap[game.playerNamesObj.southName].standsCount++ :
                             playerRoundsMap[game.playerNamesObj.southName].failCount++;
                         if (round.didBet.south) {
                             playerRoundsMap[game.playerNamesObj.southName].betCount++;
+                            if (round.isStand.south) {
+                                playerRoundsMap[game.playerNamesObj.southName].betAndStandsCount++;
+                            }
                         }
                     }
                 )
             }
         );
-        console.log("playerRoundsMap = " + JSON.stringify(playerRoundsMap));
+        // console.log("playerRoundsMap = " + JSON.stringify(playerRoundsMap));
         return playerRoundsMap
     };
 
@@ -201,6 +217,26 @@ class StatisticsScreen extends Component {
             }
         );
         return bidsArray
+    };
+
+    calcStandsPerBidding = () => {
+        let standsPerBidArray = new Array(14).fill(0);
+        this.state.allGames.forEach(
+            game => {
+                game.roundsHistory.forEach(
+                    round => {
+                        Object.keys(round.biddings).forEach(
+                            location => {
+                                if (round.isStand[location]) {
+                                    standsPerBidArray[round.biddings[location]]++
+                                }
+                            }
+                        )
+                    }
+                )
+            }
+        );
+        return standsPerBidArray
     };
 
     renderStandsGraphs = () => {
@@ -349,27 +385,56 @@ class StatisticsScreen extends Component {
         return (Object.keys(this.state.allPlayersPercentage)
             .sort((name1, name2) => this.state.allPlayersPercentage[name2].betCount - this.state.allPlayersPercentage[name1].betCount || this.state.allPlayersPercentage[name1].standsCount + this.state.allPlayersPercentage[name1].failCount - this.state.allPlayersPercentage[name2].standsCount + this.state.allPlayersPercentage[name2].failCount)
             .map((name) => {
+                const betCount = this.state.allPlayersPercentage[name].betCount;
                 const roundsCount = this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
-                const fraction = this.state.allPlayersPercentage[name].betCount / roundsCount;
+                const fraction = betCount / roundsCount;
                 const percentage = Number((fraction * 100).toFixed(0));
+                const stands = this.state.allPlayersPercentage[name].betAndStandsCount;
+                const fails = betCount - stands;
+                const standsFraction = (stands / betCount) || 0;
+                const standsPercentage = Number((standsFraction * 100).toFixed(0));
                 return (
-                    <View key={name} row>
-                        <View row spread style={{
-                            backgroundColor: '#f9f9f9',
-                            height: 20,
-                            marginBottom: 8,
-                            width: (CARD_WIDTH * (1 - fraction))
-                        }}>
-                            <Text>{`${name.toUpperCase()}`}</Text>
-                            <Text>{`${this.state.allPlayersPercentage[name].betCount}/${roundsCount}`}</Text>
+                    <View key={name}>
+                        <View row>
+                            <View row spread style={{
+                                backgroundColor: '#f9f9f9',
+                                height: 20,
+                                marginBottom: 1,
+                                width: (CARD_WIDTH * (1 - fraction))
+                            }}>
+                                <Text>{`${name.toUpperCase()}`}</Text>
+                                {/*<Text>{`${this.state.allPlayersPercentage[name].betAndStandsCount} stand`}</Text>*/}
+                                {/*<Text style={{fontSize:10}}>{fails}</Text>*/}
+                                <Text>{`${betCount}/${roundsCount}`}</Text>
+                            </View>
+                            <View row center style={{
+                                backgroundColor: Colors.blue60,
+                                height: 20,
+                                marginBottom: 1,
+                                width: (CARD_WIDTH * fraction)
+                            }}>
+                                <Text>{`${percentage}%`}</Text>
+                            </View>
                         </View>
-                        <View row center style={{
-                            backgroundColor: Colors.green10,
-                            height: 20,
-                            marginBottom: 8,
-                            width: (CARD_WIDTH * fraction)
-                        }}>
-                            <Text>{`${percentage}%`}</Text>
+                        <View row>
+                            <View row spread style={{
+                                backgroundColor: Colors.red40,
+                                height: 10,
+                                marginBottom: 8,
+                                width: (CARD_WIDTH * (1 - standsFraction))
+                            }}>
+                                <Text style={{fontSize:8}}>{name}</Text>
+                                <Text style={{fontSize:8}}>{`${fails} fails `}</Text>
+                            </View>
+                            <View row spread style={{
+                                backgroundColor: Colors.green40,
+                                height: 10,
+                                marginBottom: 8,
+                                width: (CARD_WIDTH * standsFraction)
+                            }}>
+                                <Text style={{fontSize:8}}>{` ${stands} stands`}</Text>
+                                <Text style={{fontSize:8}}>{`${standsPercentage}%`}</Text>
+                            </View>
                         </View>
                     </View>
                 )
@@ -378,27 +443,54 @@ class StatisticsScreen extends Component {
     };
 
     renderBiddingsDistributionGraphs = () => {
-        const bidsCount = this.state.biddingsDistribution.reduce((a,b) => a + b, 0);
+        const allRoundsCount = this.state.biddingsDistribution.reduce((a,b) => a + b, 0);
         const maxValue = Math.max(...this.state.biddingsDistribution);
-        return this.state.biddingsDistribution.map((bid, index) => {
-            const fraction = bid / bidsCount;
-            const fractionToRender = bid / maxValue;
+        return this.state.biddingsDistribution.map((bidCount, index) => {
+            const fraction = bidCount / allRoundsCount;
+            const fractionToRender = bidCount / maxValue;
             const percentage = Number((fraction * 100).toFixed(0));
+            const stands = this.state.standsPerBidding[index];
+            const fails = bidCount - stands;
+            const standsFraction = (stands / bidCount) || 0;
+            const standsPercentage = Number((standsFraction * 100).toFixed(0));
 
-            if (bid === 0) {
+            if (bidCount === 0) {
                 if (index > 8) {return}
                 return <Text key={index}>{index}</Text>;
             }
             return (
-                <View key={index} row spread style={{
-                    backgroundColor: Colors.blue40,
-                    height: 20,
-                    marginBottom: 1,
-                    width: (CARD_WIDTH*fractionToRender)
-                }}>
-                    <Text>{index}</Text>
-                    {(fractionToRender > 0.1) && <Text>{` ${percentage}%`}</Text>}
-                    <Text>{` ${bid}`}</Text>
+                <View key={index}>
+                    <View row spread style={{
+                        backgroundColor: Colors.blue40,
+                        height: 20,
+                        marginBottom: 1,
+                        width: (CARD_WIDTH*fractionToRender)
+                    }}>
+                        <Text>{index}</Text>
+                        {(fractionToRender > 0.1) && <Text>{` ${percentage}%`}</Text>}
+                        <Text>{` ${bidCount}`}</Text>
+                    </View>
+                    <View row>
+                        <View row spread style={{
+                            backgroundColor: Colors.red40,
+                            height: 10,
+                            marginBottom: 8,
+                            width: (CARD_WIDTH * (1 - standsFraction))
+                        }}>
+                            <Text style={{fontSize:8}}>{`${100-standsPercentage}%`}</Text>
+                            <Text style={{fontSize:8}}>{`${fails} fails `}</Text>
+                        </View>
+                        <View row spread style={{
+                            backgroundColor: Colors.green40,
+                            height: 10,
+                            marginBottom: 8,
+                            width: (CARD_WIDTH * standsFraction)
+                        }}>
+                            <Text style={{fontSize:8}}>{` ${stands} stands`}</Text>
+                            <Text style={{fontSize:8}}>{`${standsPercentage}%`}</Text>
+                        </View>
+                    </View>
+
                 </View>
                 )
             }

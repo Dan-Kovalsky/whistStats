@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {TouchableWithoutFeedback, Keyboard, FlatList, Alert} from 'react-native';
-import {View, Text, TouchableOpacity, Assets, TextField, Button, Colors} from 'react-native-ui-lib';
-
+import {View, Text, TouchableOpacity, Assets, TextField, Button, Colors, FeatureHighlight, Typography} from 'react-native-ui-lib';
+import _ from 'lodash'
 import NameInput from './../components/NameInput'
 
 import PropTypes from 'prop-types';
@@ -14,8 +14,18 @@ const OPTIONAL_NAMES_KEY = '@WhistStats:NewGameScreen:optionalNamesList';
 const SOUTH_NAME_KEY = '@WhistStats:NewGameScreen:southName';
 
 
-class NewGameScreen extends Component {
+const titles = [
+    'All Players List',
+    'Your Name',
+    'Start Round',
+];
+const messages = [
+    'First add your name and all of your friend`s names to the list\nYou can delete and add new names always',
+    'Write your name. It must be identical to the list',
+    'Add Names from Players List according to sitting order on table, and click START at the top right',
+];
 
+class NewGameScreen extends Component {
 
     static propTypes = {
         componentId: PropTypes.string
@@ -23,8 +33,10 @@ class NewGameScreen extends Component {
 
     constructor(props) {
         super(props);
-
+        this.targets = {};
         this.state = {
+            isShowInfoOverlay: false,
+            currentTargetIndex: 0,
             addingName: false,
             newName: '',
             optionalNamesList: [],
@@ -51,16 +63,22 @@ class NewGameScreen extends Component {
         whistStore.loadGamesHistory();
         AsyncStorage.getItem(SOUTH_NAME_KEY)
             .then(name => {
-                this.setState({names:{...this.state.names, southName: name}})
+                this.setState({names: {...this.state.names, southName: name}})
             });
-        this.loadOptionalNamesFromStorage()
+        this.loadOptionalNamesFromStorage().then(() => {
+            if (this.state.optionalNamesList.length < 4) {
+                setTimeout(() => {
+                    this.showHighlight();
+                }, 500);
+            }
+        })
     }
 
     loadOptionalNamesFromStorage = async () => {
         let optionalNames = [];
         let optionalNamesListStr = await AsyncStorage.getItem(OPTIONAL_NAMES_KEY);
         if (optionalNamesListStr == null) {
-            const optionalNamesExample = [{name: 'Dan'},{name: 'Eyal'},{name: 'Segev'}];
+            const optionalNamesExample = [{name: 'GalDelete'},{name: 'DanKov'},{name: 'Ben Demo'}];
             await this.saveNamesToStorage(optionalNamesExample);
             optionalNames = optionalNamesExample;
         }
@@ -231,7 +249,7 @@ class NewGameScreen extends Component {
                         <Text>{`Del ${Assets.emojis.no_entry}`}</Text>
                     </TouchableOpacity>
                 </View>
-                <View flex style={{borderWidth: 0.5, borderColor: 'grey'}}/>
+                <View flex style={{borderWidth: 0.5, borderColor: 'grey'}} />
             </TouchableOpacity>
         )
     };
@@ -312,24 +330,70 @@ class NewGameScreen extends Component {
         });
     };
 
+
+    addTarget = (ref, id) => {
+        if (ref && !this.targets[id]) {
+            this.targets[id] = ref;
+        }
+    };
+
+    moveNext = () => {
+        const {currentTargetIndex} = this.state;
+        const newTargetIndex = currentTargetIndex + 1;
+        this.moveToPage(newTargetIndex);
+    };
+
+    moveToPage = (index) => {
+        if (index < _.size(this.targets)) {
+            this.setState({currentTargetIndex: index});
+        } else {
+            this.closeHighlight();
+        }
+    };
+
+    onPagePress = (index) => {
+        this.moveToPage(index);
+    };
+
+    closeHighlight = () => {
+        this.setState({isShowInfoOverlay: false}, () => {});
+    };
+
+    showHighlight = () => {
+        this.setState({isShowInfoOverlay: true});
+    };
+
+
+    renderHighlighterOverlay = () => {
+        const {isShowInfoOverlay, currentTargetIndex} = this.state;
+        return (
+            <FeatureHighlight
+                visible={isShowInfoOverlay}
+                title={titles[currentTargetIndex]}
+                message={messages[currentTargetIndex]}
+                confirmButtonProps={{label: 'Got It', onPress: this.moveNext}}
+                // onBackgroundPress={this.closeHighlight}
+                getTarget={() => this.targets[currentTargetIndex]}
+                borderRadius={currentTargetIndex === 4 ? 4 : undefined}
+            />
+        );
+    };
+
     render() {
         return (
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                 <View centerH flex style={{backgroundColor: NEW_GAME_SCREEN_BG}}>
-                    {(this.state.optionalNamesList.length >= 4)
-                        ?
-                        <View>
-                            <NameInput text={this.state.names.northName} errorMsg={this.state.nameErrorMsg.north} position='north' onChangeText={this.onNChanged}/>
-                            <View spread row>
-                                <NameInput text={this.state.names.westName} errorMsg={this.state.nameErrorMsg.west} position='west' onChangeText={this.onWChanged}/>
-                                <NameInput text={this.state.names.eastName} errorMsg={this.state.nameErrorMsg.east} position='east' onChangeText={this.onEChanged}/>
-                            </View>
+                    <View style={{backgroundColor: NEW_GAME_SCREEN_BG}} centerH ref={r => (this.addTarget(r, '2'))}>
+                        <NameInput text={this.state.names.northName} errorMsg={this.state.nameErrorMsg.north} position='north' onChangeText={this.onNChanged}/>
+                        <View spread row>
+                            <NameInput text={this.state.names.westName} errorMsg={this.state.nameErrorMsg.west} position='west' onChangeText={this.onWChanged}/>
+                            <NameInput text={this.state.names.eastName} errorMsg={this.state.nameErrorMsg.east} position='east' onChangeText={this.onEChanged}/>
+                        </View>
+                        <View style={{backgroundColor: NEW_GAME_SCREEN_BG}} ref={r => (this.addTarget(r, '1'))}>
                             <NameInput text={this.state.names.southName} errorMsg={this.state.nameErrorMsg.south} position='My Name' onChangeText={this.onSChanged}/>
                         </View>
-                        :
-                        <Text>Add at least four names to the list</Text>
-                    }
-                    <View style={{height:200, width: 120, borderWidth:1, borderColor:'black', marginTop: 20, backgroundColor: Colors.yellow80}}>
+                    </View>
+                    <View style={{height:200, width: 120, borderWidth:1, borderColor:'black', marginTop: 20, backgroundColor: Colors.yellow80 }} ref={r => (this.addTarget(r, '0'))}>
                         {this.state.addingName ?
                             <View>
                                 <TextField
@@ -360,6 +424,7 @@ class NewGameScreen extends Component {
                             </TouchableOpacity>
                         }
                         <View center>
+                            <Text> </Text>
                             <Text style={{fontWeight:'bold', textDecorationLine:'underline'}}>All Names</Text>
                         </View>
                         {this.renderFlatList()}
@@ -388,6 +453,7 @@ class NewGameScreen extends Component {
                             onPress={this.statisticsBtnPressed}
                         />
                     </View>
+                    {this.renderHighlighterOverlay()}
                 </View>
              </TouchableWithoutFeedback>
         );
