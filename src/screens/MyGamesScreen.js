@@ -43,7 +43,7 @@ class MyGamesScreen extends Component {
                 title: {
                     text: `Games History`
                 }
-
+              
             },
             layout: {
                 orientation: ['portrait'],
