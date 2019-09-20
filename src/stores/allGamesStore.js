@@ -33,18 +33,18 @@ const setters = remx.setters({
                 state.games = JSON.parse(allGamesString);
             }
         } catch (error) {
-            console.warn(error.message);
+            // console.warn(error.message);
         }
     },
 
     async addNewGame(gameAsJson) {
         state.games.push(gameAsJson);
-        console.warn('DANKOV inAddNewGame gameAsJson = '  + gameAsJson);
+        // console.warn('DANKOV inAddNewGame gameAsJson = '  + gameAsJson);
         try {
             // await AsyncStorage.setItem("ALL_GAMES_KEY", "DAN kovalsky str")
             await AsyncStorage.setItem("ALL_GAMES_KEY", JSON.stringify(state.games))
         } catch (error) {
-            console.warn(error.message);
+            // console.warn(error.message);
         }
     },
 
@@ -53,7 +53,7 @@ const setters = remx.setters({
         try {
             await AsyncStorage.setItem("ALL_GAMES_KEY", JSON.stringify(state.games))
         } catch (error) {
-            console.warn(error.message);
+            // console.warn(error.message);
         }
     }
     // setFakeWhistGame(gamesObj){

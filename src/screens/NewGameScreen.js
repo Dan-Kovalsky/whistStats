@@ -17,7 +17,7 @@ const SOUTH_NAME_KEY = '@WhistStats:NewGameScreen:southName';
 const titles = [
     'All Players List',
     'Your Name',
-    'Start Round',
+    'Start New Game',
 ];
 const messages = [
     'First add your name and all of your friend`s names to the list\nYou can delete and add new names always',
@@ -185,7 +185,6 @@ class NewGameScreen extends Component {
     isAllErrorsEmpty = () => {
         let isEmpty = true;
         Object.keys(this.state.nameErrorMsg).forEach(location => {
-            // console.warn(location)
             isEmpty = isEmpty && this.state.nameErrorMsg[location] === ''
         });
         return isEmpty
@@ -194,7 +193,6 @@ class NewGameScreen extends Component {
     allNamesExist = () => {
         let isAllExist = true;
         Object.keys(this.state.names).forEach(location => {
-            // console.warn(location)
             isAllExist = isAllExist && this.state.optionalNamesList.includes(this.state.names[location])
         });
         return isAllExist
@@ -374,7 +372,7 @@ class NewGameScreen extends Component {
                 confirmButtonProps={{label: 'Got It', onPress: this.moveNext}}
                 // onBackgroundPress={this.closeHighlight}
                 getTarget={() => this.targets[currentTargetIndex]}
-                borderRadius={currentTargetIndex === 4 ? 4 : undefined}
+                // borderRadius={currentTargetIndex === 4 ? 4 : undefined}
             />
         );
     };

@@ -73,8 +73,6 @@ class StatisticsScreen extends Component {
 
     componentDidMount() {
         this.getAllGamesFromStorage().then(() => {
-            // console.log("ALL GAMES\n" + JSON.stringify(this.state.allGames))
-                // const allPlayersPercentage = this.calcStandsPercentage();
                 this.setState({
                     allPlayersPercentage: this.calcStandsPercentage(),
                     biddingsDistribution: this.calcBiddingsDistribution(),
@@ -82,7 +80,6 @@ class StatisticsScreen extends Component {
                     trumpsDistribution: this.calcTrumpsDistribution()},
                     () =>{this.setState({loading: false})}
                     );
-                // this.setState({playersRate: this.calcTrumpsDistribution()});
             }
         )
     }
@@ -127,10 +124,6 @@ class StatisticsScreen extends Component {
                         playerRoundsMap[game.playerNamesObj[`${location}Name`]].sumOfPoints += gameScore[location];
                     }
                 );
-
-                // console.log("gameScore = " + JSON.stringify(gameScore))
-                // console.log("playerRoundsMap[name] sumOfPoints = " + JSON.stringify(playerRoundsMap[name]))
-
 
                 game.roundsHistory.forEach(
                     round => {

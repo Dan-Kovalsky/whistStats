@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {FlatList, Dimensions, Alert} from 'react-native';
-import {Text, View, Button, Assets, TouchableOpacity} from 'react-native-ui-lib';
+import {Text, View, Button, Assets, TouchableOpacity, FeatureHighlight} from 'react-native-ui-lib';
 
 import {Navigation} from "react-native-navigation";
 import PropTypes from 'prop-types';
@@ -16,11 +16,18 @@ const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 const CUBE_WIDTH = SCREEN_WIDTH / 11;
 
+const titles = [
+    'Important!'
+];
+const messages = [
+    'After the last round, remember to save the game to your games history',
+];
+
 class TableScreen extends Component {
 
     static propTypes = {
         componentId: PropTypes.string,
-        somePropToPass: PropTypes.string,
+        isTableScreenVisited: PropTypes.bool,
         allGamesObj: PropTypes.array,
         roundsHistory: PropTypes.array,
         deleteLastRound: PropTypes.func,
@@ -34,7 +41,9 @@ class TableScreen extends Component {
         Navigation.events().bindComponent(this);
         this.backToGameScreen.bind(this.backToGameScreen);
 
+        this.targets = {};
         this.state = {
+            isShowInfoOverlay: false,
             allGamesObj : {},
             roundsHistory: this.props.roundsHistory
         }
@@ -64,6 +73,11 @@ class TableScreen extends Component {
 
     componentDidMount() {
         allGamesActions.fetchWhistGame();
+        if (!this.props.isTableScreenVisited) {
+            setTimeout(() => {
+                this.showHighlight();
+            }, 200);
+        }
     }
 
     componentWillMount(){
@@ -101,9 +115,8 @@ class TableScreen extends Component {
             allGames.push(objectToAdd);
             await AsyncStorage.setItem(ALL_GAMES_KEY, JSON.stringify(allGames));
         } catch (error) {
-
             // Error retrieving data
-            console.log(error.message);
+            // console.log(error.message);
         }
     };
 
@@ -113,16 +126,16 @@ class TableScreen extends Component {
         this.showGamesHistoryScreen();
     };
 
-    alertEndGameDialog = () => {
+    alertSaveGameDialog = () => {
         if (this.state.roundsHistory.length > 0) {
             Alert.alert(
                 'Finish Game',
-                'Are you sure?',
+                'This will add this game to your history.\nAre you sure?',
                 [
                     {text: 'Cancel', onPress: () => {}, style: 'cancel'},
                     // {text: 'save', onPress: () => {alert("WIP, soon this game will save in memory")}},
                     {text: 'save', onPress: () => {this.saveGameAndOpenMyGames()}},
-                    {text: 'Delete', onPress: () => this.alertBeforeRestart()},
+                    // {text: 'Delete', onPress: () => this.alertBeforeRestart()},
                 ],
                 {cancelable: false},
             );
@@ -357,17 +370,29 @@ class TableScreen extends Component {
                         onPress={this.alertDeleteDialog}
                     />
                     <Button
-                        backgroundColor={'blue'}
-                        color={'white'}
-                        label={'End Game'}
+                        backgroundColor={'pink'}
+                        color={'black'}
+                        label={'Restart game'}
                         size="small"
                         borderRadius={50}
                         text80
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
-                        onPress={this.alertEndGameDialog}
+                        onPress={this.alertBeforeRestart}
                     />
                 </View>
+                <Button
+                    backgroundColor={'blue'}
+                    color={'white'}
+                    label={'Save Game'}
+                    size="small"
+                    borderRadius={50}
+                    text80
+                    labelStyle={{fontWeight: 'bold'}}
+                    style={{width:170, height:30, margin:10}}
+                    onPress={this.alertSaveGameDialog}
+                    ref={r => (this.addTarget(r, '0'))}
+                />
                 {this.renderTimeFromStart()}
                 <Text>{"long press on a round to get more info"}</Text>
                 <View row>
@@ -383,35 +408,51 @@ class TableScreen extends Component {
                         onPress={this.gamesHistoryBtnPressed}
                     />
                     <Button
-                        backgroundColor={'pink'}
-                        color={'black'}
-                        label={'Restart game'}
+                        backgroundColor={'magenta'}
+                        color={'white'}
+                        label={'statistics'}
                         size="small"
                         borderRadius={50}
                         text80
                         labelStyle={{fontWeight: 'bold'}}
                         style={{width:170, height:30, margin:10}}
-                        onPress={this.alertBeforeRestart}
+                        onPress={this.statisticsBtnPressed}
                     />
                 </View>
-                <Button
-                    backgroundColor={'magenta'}
-                    color={'white'}
-                    label={'statistics'}
-                    size="small"
-                    borderRadius={50}
-                    text80
-                    labelStyle={{fontWeight: 'bold'}}
-                    style={{width:170, height:30, margin:10}}
-                    onPress={this.statisticsBtnPressed}
-                />
             </View>
         )
     };
 
 
+    addTarget = (ref, id) => {
+        if (ref && !this.targets[id]) {
+            this.targets[id] = ref;
+        }
+    };
+
+    closeHighlight = () => {
+        this.setState({isShowInfoOverlay: false}, () => {});
+    };
+
+    showHighlight = () => {
+        this.setState({isShowInfoOverlay: true});
+    };
+
+    renderHighlighterOverlay = () => {
+        const {isShowInfoOverlay} = this.state;
+        return (
+            <FeatureHighlight
+                visible={isShowInfoOverlay}
+                title={titles['0']}
+                message={messages['0']}
+                confirmButtonProps={{label: 'Got It', onPress: this.closeHighlight}}
+                onBackgroundPress={this.closeHighlight}
+                getTarget={() => this.targets['0']}
+            />
+        );
+    };
+
     render() {
-        // let gamesLst = this.state.allGamesObj.games
         return (
             <View flex style={{backgroundColor: clr.BG}}>
                 {this.renderTitle()}
@@ -421,6 +462,7 @@ class TableScreen extends Component {
                     renderItem={this.renderLine}
                     ListFooterComponent={this.renderFooter}
                 />
+                {this.renderHighlighterOverlay()}
             </View>
         );
     }

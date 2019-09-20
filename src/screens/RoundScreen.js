@@ -28,7 +28,7 @@ class RoundScreen extends Component {
 
     constructor(props) {
         super(props);
-
+        this.isTableScreenVisited = false;
         this.state = {
             roundNumber: 1,
             bid_notRes: true,
@@ -132,7 +132,7 @@ class RoundScreen extends Component {
                     component: {
                         name: 'whistStats.TableScreen',
                         passProps: {
-                            somePropToPass: 'Some props - Table from DB',
+                            isTableScreenVisited: this.isTableScreenVisited,
                             roundsHistory: roundsHistory,
                             allNames: this.props.allNames,
                             deleteLastRound: this.deleteLastRound,
@@ -142,7 +142,7 @@ class RoundScreen extends Component {
                     }
                 }]
             }
-        });
+        }).then(() => this.isTableScreenVisited = true)
     };
 
     static get options() {
@@ -260,8 +260,6 @@ class RoundScreen extends Component {
         // Call this function only after finish whole Round
     initiateNewBidState = () => {
         const roundNum = this.state.roundNumber + 1;
-        // const roundNum = this.state ? this.state.roundNumber + 1 : 1;
-
         // console.log(JSON.stringify(this.state))
         return ({
             roundNumber: roundNum,
@@ -331,7 +329,7 @@ class RoundScreen extends Component {
         if (this.state.isRoundFail) {
             return points;
         }
-        const roundPoints = {       //TODO Add this to the state for adding points per round stats
+        const roundPoints = {
             north: this.calcRoundPoints(biddings.north, results.north),
             west: this.calcRoundPoints(biddings.west, results.west),
             east: this.calcRoundPoints(biddings.east, results.east),

@@ -45,7 +45,7 @@ class OldGameTableScreen extends Component {
                     },
                 ],
                 title: {
-                    text: 'Game From '      //TODO add Date to the title
+                    text: 'Game From '
                 }
             },
             layout: {
@@ -60,7 +60,7 @@ class OldGameTableScreen extends Component {
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
-                    text: `Game From ${this.props.gameStartDateStr}`      //TODO add Date to the title
+                    text: `Game From ${this.props.gameStartDateStr}`
                 }
             },
         })
