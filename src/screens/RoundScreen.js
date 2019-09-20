@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {BackHandler, Alert, TouchableWithoutFeedback, Keyboard} from 'react-native';
-import {View, Button, Colors, Assets} from 'react-native-ui-lib';
+import {View, Button, Assets} from 'react-native-ui-lib';
 
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
@@ -28,7 +28,7 @@ class RoundScreen extends Component {
 
     constructor(props) {
         super(props);
-
+        this.isTableScreenVisited = false;
         this.state = {
             roundNumber: 1,
             bid_notRes: true,
@@ -85,31 +85,45 @@ class RoundScreen extends Component {
         // this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
 
+    alertDeleteDialog = () => {
+        Alert.alert(
+            'Delete Last Round',
+            'Are you sure?',
+            [
+                {text: 'Cancel', onPress: () => {}, style: 'cancel'},
+                {text: 'OK', onPress: () => this.deleteLastRound()},
+            ],
+            {cancelable: true},
+        );
+
+    };
+
+
     deleteLastRound = () => {
-        roundsHistory.pop()
+        roundsHistory.pop();
         const roundNumber = this.state.roundNumber - 1;
         let points = {
             north: 0,
             south: 0,
             west: 0,
             east: 0
-        }
+        };
         let curSequence = {
             north: 0,
             south: 0,
             west: 0,
             east: 0
-        }
+        };
         if (roundsHistory.length > 0) {
-            points = {...roundsHistory[roundsHistory.length - 1].points}
+            points = {...roundsHistory[roundsHistory.length - 1].points};
             curSequence = {...roundsHistory[roundsHistory.length - 1].curSequence}
         }
         this.setState({
             roundNumber,
             points,
             curSequence
-        })
-    }
+        }, () => this.changeScreenTitle())
+    };
 
     pushTableScreen = () => {
         Navigation.showModal({
@@ -118,7 +132,7 @@ class RoundScreen extends Component {
                     component: {
                         name: 'whistStats.TableScreen',
                         passProps: {
-                            somePropToPass: 'Some props - Table from DB',
+                            isTableScreenVisited: this.isTableScreenVisited,
                             roundsHistory: roundsHistory,
                             allNames: this.props.allNames,
                             deleteLastRound: this.deleteLastRound,
@@ -128,8 +142,8 @@ class RoundScreen extends Component {
                     }
                 }]
             }
-        });
-    }
+        }).then(() => this.isTableScreenVisited = true)
+    };
 
     static get options() {
         return {
@@ -171,18 +185,27 @@ class RoundScreen extends Component {
             if (this.state.bid_notRes) {        // We Finished Round
             }
             else {                              // We finished Bidding
-                this.uploadBiddings()
+                this.uploadBiddings();
                 this.changeScreenTitle();
             }
-
         }
     }
 
-    uploadResults() {
-        this.pushTableScreen()      //TODO maybe I dont want it to jump always
-    }
-
-    uploadBiddings() {
+    alertEndRoundDialog() {
+        Alert.alert(
+            `Round ${this.state.roundNumber} Finished`,
+            '',
+            [
+                {text: 'Delete Round', onPress: () => {
+                    this.alertDeleteDialog();
+                    // this.deleteLastRound();
+                    }
+                },
+                {text: 'Show Table', onPress: () => {this.pushTableScreen()}},
+                {text: 'Play Next Round', onPress: () => {}}
+            ],
+            {cancelable: true},
+        );
 
     }
 
@@ -194,7 +217,7 @@ class RoundScreen extends Component {
                 }
             }
         });
-    }
+    };
 
 
     navigationButtonPressed({buttonId}) {
@@ -208,11 +231,11 @@ class RoundScreen extends Component {
 
     androidPhysicalBackPressed = () => {
         return this.alertBeforeBack();
-    }
+    };
 
     iosNavigationBackPressed = () => {
         this.alertBeforeBack()
-    }
+    };
 
     alertBeforeBack = async () =>{
         Alert.alert(
@@ -225,9 +248,9 @@ class RoundScreen extends Component {
                     return false;
                 }}
             ],
-            {cancelable: false},
+            {cancelable: true},
         );
-    }
+    };
 
     popScreenAndDeleteGame = async () => {
         roundsHistory = [];
@@ -237,8 +260,6 @@ class RoundScreen extends Component {
         // Call this function only after finish whole Round
     initiateNewBidState = () => {
         const roundNum = this.state.roundNumber + 1;
-        // const roundNum = this.state ? this.state.roundNumber + 1 : 1;
-
         // console.log(JSON.stringify(this.state))
         return ({
             roundNumber: roundNum,
@@ -270,8 +291,7 @@ class RoundScreen extends Component {
             startRoundTime: undefined,
             endRoundTime: undefined
         });
-
-    }
+    };
 
     updateIsStand = (biddings, results) => {
         return (
@@ -282,7 +302,7 @@ class RoundScreen extends Component {
                 south: biddings.south === results.south
             }
         )
-    }
+    };
 
     updateRoundFail = (biddings, results) => {
         return (
@@ -291,7 +311,7 @@ class RoundScreen extends Component {
                 biddings.east !== results.east &&
                 biddings.south !== results.south
         )
-    }
+    };
 
     updateSequence = (biddings, results, lastSequence) => {
         return (
@@ -302,23 +322,29 @@ class RoundScreen extends Component {
                 south: biddings.south === results.south ? lastSequence.south + 1 : 0
             }
         )
-    }
+    };
 
 
     updatePointsObject = (biddings, results, points) => {
         if (this.state.isRoundFail) {
             return points;
         }
+        const roundPoints = {
+            north: this.calcRoundPoints(biddings.north, results.north),
+            west: this.calcRoundPoints(biddings.west, results.west),
+            east: this.calcRoundPoints(biddings.east, results.east),
+            south: this.calcRoundPoints(biddings.south, results.south)
+        };
         return {
-            north: points.north+this.calcRoundPoints(biddings.north, results.north) + this.Row5Bonus('north'),
-            west: points.west + this.calcRoundPoints(biddings.west, results.west) + this.Row5Bonus('west'),
-            east: points.east + this.calcRoundPoints(biddings.east, results.east) + this.Row5Bonus('east'),
-            south: points.south+this.calcRoundPoints(biddings.south, results.south) + this.Row5Bonus('south')
+            north: points.north+roundPoints.north + this.Row5Bonus('north'),
+            west: points.west + roundPoints.west  + this.Row5Bonus('west'),
+            east: points.east + roundPoints.east  + this.Row5Bonus('east'),
+            south: points.south+roundPoints.south + this.Row5Bonus('south')
         }
-    }
+    };
 
     Row5Bonus = (location) => {
-        const sequence = this.state.curSequence[location]
+        const sequence = this.state.curSequence[location];
         if (this.state.roundNumber < 4) return 0;
         if (sequence > 0 && sequence % 5 === 0) {
             return pts.BONUS_POINTS_FOR_5_ROW
@@ -326,11 +352,11 @@ class RoundScreen extends Component {
         else {
             return 0
         }
-    }
+    };
 
 
     calcRoundPoints = (bid, res) => {
-        const difference = Math.abs(bid - res)
+        const difference = Math.abs(bid - res);
         if (difference === 0) {                          //Stand
             if (bid === 0) {
                 if (this.state.sumOfBiddings < 13) {   //Under
@@ -352,7 +378,7 @@ class RoundScreen extends Component {
             else
                 return pts.PENALTY_PER_DIFFERENCE * difference
         }
-    }
+    };
 
     changeRoundState = () => {      // this func checks if the Button click is legal and change state if so
         if(this.state.bid_notRes){      //we are on the screen of the bidding
@@ -362,17 +388,17 @@ class RoundScreen extends Component {
                         let newResultsObject = JSON.parse(JSON.stringify(this.state.biddings));
                         this.setState({bid_notRes: false, results: newResultsObject, upDown: this.calcUpDown(), sumOfResults: this.state.sumOfBiddings, startRoundTime: new Date()});
                     } else {
-                        Alert.alert('!! SUM 13 !!'); return;
+                        Alert.alert('!! SUM 13 !!');
                     }
                 } else {
                     Alert.alert('!! BET 5+ !!')
                 }
             } else {
-                Alert.alert('!! CHOOSE TRUMP !!'); return;
-            };
+                Alert.alert('!! CHOOSE TRUMP !!');
+            }
         } else {                        // bid_notRes is false, so we want to end a round
             if(this.state.sumOfResults !== 13) {
-                Alert.alert('!! SUM NOT 13 !!'); return;
+                Alert.alert('!! SUM NOT 13 !!');
             } else {
                 this.setState({
                     isStand: this.updateIsStand(this.state.biddings, this.state.results),
@@ -401,7 +427,7 @@ class RoundScreen extends Component {
                         });
                         this.setState(this.initiateNewBidState(),
                             () => this.changeScreenTitle());
-                        this.uploadResults();
+                        this.alertEndRoundDialog();
 
                     })
                 })
@@ -411,26 +437,24 @@ class RoundScreen extends Component {
 
     whenShapePressed = (shapeName) => {
         this.setState({chosenTrump: shapeName})
-
-    }
+    };
 
     whenBidBtnPressed = (location, numPressed) => {
         let newBiddingState = {...this.state.biddings};
         newBiddingState[location] = numPressed;
         const newSum = this.calcSumOfBiddings(location, numPressed);
         this.setState({biddings: newBiddingState, sumOfBiddings: newSum, didBet: this.checkIfBet(location, numPressed)})
-
-    }
+    };
 
     whenResBtnPressed = (location, numPressed) => {
         let newResultsState = {...this.state.results};
         newResultsState[location] = numPressed;
         this.setState({results: newResultsState, sumOfResults: this.calcSumOfResults(location, numPressed)})
 
-    }
+    };
 
     checkIfBet = (location, numPressed) => {
-        let newDidBet = {...this.state.didBet}
+        let newDidBet = {...this.state.didBet};
         if (numPressed >= 5) {
             if (!newDidBet.north && !newDidBet.west && !newDidBet.east && !newDidBet.south) {       //Its the first one to have bid more than 5
                 newDidBet[location] = true;
@@ -451,7 +475,7 @@ class RoundScreen extends Component {
             }
         }
         return newDidBet
-    }
+    };
 
     calcSumOfBiddings = (location, numPressed) => {
         if (location === 'north') return numPressed+this.state.biddings.west+this.state.biddings.east+this.state.biddings.south;
@@ -465,7 +489,7 @@ class RoundScreen extends Component {
         else if (location === 'west') return this.state.results.north + numPressed + this.state.results.east + this.state.results.south;
         else if (location === 'east') return this.state.results.north + this.state.results.west + numPressed + this.state.results.south;
         else if (location === 'south') return this.state.results.north + this.state.results.west + this.state.results.east + numPressed;
-    }
+    };
 
     calcUpDown = () => this.state.sumOfBiddings - 13;
 
@@ -496,7 +520,7 @@ class RoundScreen extends Component {
                     <View row center>
                         <BidInfo bid_notRes={this.state.bid_notRes} sumOfBiddings={this.state.sumOfBiddings} sumOfResults={this.state.sumOfResults}/>
                         {this.state.bid_notRes ?
-                            <ShapeInput chosenTrump={this.state.chosenTrump} whenShapePressed={this.whenShapePressed}></ShapeInput>
+                            <ShapeInput chosenTrump={this.state.chosenTrump} whenShapePressed={this.whenShapePressed}/>
                             :
                             <RoundTrump trump={this.state.chosenTrump}/>
                         }

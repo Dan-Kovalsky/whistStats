@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, View, TextField, Colors, Button} from 'react-native-ui-lib';
+import {View, TextField} from 'react-native-ui-lib';
 import BidBtn from "./BidBtn";
 import PropTypes from 'prop-types'
 import {BID_BTN_COLORS as clr, BID_RES_COMPONENT_BG} from '../../constants/styles/Colors'
@@ -30,9 +29,9 @@ export default class BiddingButtons extends Component {
     };
 
     onChangeText = (text) => {
-        this.setState({textVal:text})
+        this.setState({textVal:text});
         this.props.whenBidBtnPressed(this.props.location, Number(text))
-    }
+    };
 
     render(){
         return (
@@ -47,7 +46,8 @@ export default class BiddingButtons extends Component {
                 <TextField
                     centered
                     text90
-                    titleColor={clr.TEXT}
+                    style={{fontWeight: 'bold', color: clr.TEXT}}
+                    // titleColor={clr.TEXT}
                     containerStyle={{height:40, width:25, backgroundColor: this.bgColor()}}
                     placeholder={'*'}
                     value={this.state.textVal}

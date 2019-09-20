@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {Text, View, TextField,Colors, Button, Assets} from 'react-native-ui-lib';
-import BidBtn from "./BidBtn";
+import {View, Assets} from 'react-native-ui-lib';
 import ShapeBtn from "./ShapeBtn";
 
 export default class ShapeInput extends Component {
