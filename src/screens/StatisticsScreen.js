@@ -13,8 +13,8 @@ const CARD_WIDTH = SCREEN_WIDTH - 40;
 const CUBE_WIDTH = CARD_WIDTH / 10;
 
 const INFO_ALERTS = {
-  playersRanking: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round",
-  roundStands: "TODO",
+  playersRanking: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round.",
+  roundStands: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played.",
   pointsPerRound: "TODO",
   betsPercentage: "TODO",
   biddingsDistribution: "TODO",
@@ -256,12 +256,12 @@ class StatisticsScreen extends Component {
     };
 
     renderStandsGraphs = () => {
+      const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
+      const fraction = name => this.state.allPlayersPercentage[name].standsCount / roundsCount(name);
         return (Object.keys(this.state.allPlayersPercentage)
-            .sort((name1, name2) => this.state.allPlayersPercentage[name2].standsCount - this.state.allPlayersPercentage[name1].standsCount || this.state.allPlayersPercentage[name1].failCount - this.state.allPlayersPercentage[name2].failCount)
+            .sort((name1, name2) => fraction(name2) - fraction(name1))
             .map((name) => {
-                const roundsCount = this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
-                const fraction = this.state.allPlayersPercentage[name].standsCount / roundsCount;
-                const percentage = Number((fraction * 100).toFixed(0));
+                const percentage = Number((fraction(name) * 100).toFixed(2));
                 return (
                     <View key={name} row spread flex style={{
                         backgroundColor: Colors.green60,
@@ -271,7 +271,7 @@ class StatisticsScreen extends Component {
                     }}>
                         <Text>{`${name.toUpperCase()}`}</Text>
                         <Text>{` ${percentage}% `}</Text>
-                        <Text>{`${this.state.allPlayersPercentage[name].standsCount}/${roundsCount}`}</Text>
+                        <Text>{`${this.state.allPlayersPercentage[name].standsCount}/${roundsCount(name)}`}</Text>
                     </View>
                 )
             })
@@ -594,8 +594,12 @@ class StatisticsScreen extends Component {
 
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10}>% round stands</Text>
-                          <Text text40 marginR-5 onPress={() => this.onArrowPress("roundStands")}>{this.state.showCards.roundStands ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("roundStands")}>
+                            {`% round stands${Assets.emojis.information_source}`}
+                          </Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("roundStands")}>
+                            {this.state.showCards.roundStands ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
                         </View>
                         {this.state.showCards.roundStands && this.renderStandsGraphs()}
                       </Card>
