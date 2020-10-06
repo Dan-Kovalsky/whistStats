@@ -6,12 +6,13 @@ import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
 import AsyncStorage from '@react-native-community/async-storage';
 import {MY_GAMES_SCREEN_COLORS as clr} from "../constants/styles/Colors";
+import {reverse} from "lodash";
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 const CUBE_WIDTH = SCREEN_WIDTH / 19;
-
+const ITEM_HEIGHT = 150;
 
 class MyGamesScreen extends Component {
 
@@ -43,7 +44,6 @@ class MyGamesScreen extends Component {
                 title: {
                     text: `Games History`
                 }
-              
             },
             layout: {
                 orientation: ['portrait'],
@@ -88,7 +88,15 @@ class MyGamesScreen extends Component {
             this.setState({isGamesDataEmpty: true})
         } else {
             const allGames = JSON.parse(allGamesString);
-            this.setState({allGames});
+            const reversedAllGames = reverse(allGames);
+            this.setState({allGames: reversedAllGames});
+            Navigation.mergeOptions(this.props.componentId, {
+                topBar: {
+                    title: {
+                        text: `Games History (${reversedAllGames.length})`
+                    }
+                }
+            });
         }
     };
 
@@ -142,9 +150,10 @@ class MyGamesScreen extends Component {
         )
     };
 
-    renderInfoCube = (item) => {
+    renderInfoCube = (item, index) => {
         return (
-            <View center style={{height: 150, width: CUBE_WIDTH*3, borderColor:clr.INFO_CUBES_BORDER, backgroundColor: 'white', borderWidth:1, borderRightWidth:0.4, borderBottomWidth:5}}>
+            <View center style={{height: ITEM_HEIGHT, width: CUBE_WIDTH*3, borderColor:clr.INFO_CUBES_BORDER, backgroundColor: 'white', borderWidth:1, borderRightWidth:0.4, borderBottomWidth:5}}>
+                <Text style={{fontSize: 9}}>{`#${this.state.allGames.length - index}`}</Text>
                 <Text style={{fontSize: 9}}>{item.gameStartDateStr}</Text>
                 <Text style={{fontSize: 4}}>{item.gameStartTimeStr}</Text>
                 <Text style={{fontSize: 9}}>{item.playingTimeStr}</Text>
@@ -191,7 +200,7 @@ class MyGamesScreen extends Component {
     renderResCube = (item, location) => {
         const numberOfRounds = item.roundsHistory.length;
         return (
-            <View center style={{height: 150, width: CUBE_WIDTH*4, backgroundColor: this.bgForResCube(item, location), borderColor:clr.RESULTS_CUBES_BORDER, borderWidth:1, borderRightWidth:0.4, borderBottomWidth:5}}>
+            <View center style={{height: ITEM_HEIGHT, width: CUBE_WIDTH*4, backgroundColor: this.bgForResCube(item, location), borderColor:clr.RESULTS_CUBES_BORDER, borderWidth:1, borderRightWidth:0.4, borderBottomWidth:5}}>
                 <Text>{item.playerNamesObj[`${location}Name`].toUpperCase()}</Text>
                 <Text style={{fontWeight: 'bold'}}>{item.roundsHistory[numberOfRounds - 1].points[location]}</Text>
                 <Text>{`${this.countRoundsStands(item.roundsHistory, location)}/${numberOfRounds}`}</Text>
@@ -201,16 +210,22 @@ class MyGamesScreen extends Component {
         )
     };
 
-    renderLine = (item) => {
+    renderLine = ({item, index}) => {
         return (
-            <TouchableOpacity row style={{height: 150}} onPress={() => this.openOldGameTable(item.item)}>
-                {this.renderInfoCube(item.item)}
-                {this.renderResCube(item.item, 'north')}
-                {this.renderResCube(item.item, 'west')}
-                {this.renderResCube(item.item, 'south')}
-                {this.renderResCube(item.item, 'east')}
+            <TouchableOpacity row style={{height: ITEM_HEIGHT}} onPress={() => this.openOldGameTable(item)}>
+                {this.renderInfoCube(item, index)}
+                {this.renderResCube(item, 'north')}
+                {this.renderResCube(item, 'west')}
+                {this.renderResCube(item, 'south')}
+                {this.renderResCube(item, 'east')}
             </TouchableOpacity>
         )
+    };
+
+    extractKey = item => item.gameStartTimeObj;
+
+    getItemLayout = (data, index) => {
+       return {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
     };
 
     render() {
@@ -228,10 +243,11 @@ class MyGamesScreen extends Component {
             <View flex style={{backgroundColor: clr.BG}}>
                 {/*{this.renderTitle()}*/}
                 <FlatList
-                    keyExtractor={(item) => item.gameStartTimeObj}
+                    keyExtractor={this.extractKey}
                     data={this.state.allGames}
                     renderItem={this.renderLine}
                     // ListFooterComponent={this.renderFooter}
+                  getItemLayout={this.getItemLayout}
                 />
             </View>
         );
