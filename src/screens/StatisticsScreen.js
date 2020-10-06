@@ -16,7 +16,7 @@ const INFO_ALERTS = {
   playersRanking: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round.",
   roundStands: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played.",
   pointsPerRound: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played.",
-  betsPercentage: "TODO",
+  playerBets: "For each player:\nWhite:#bets out of #rounds he played\nBlue:% of bets out the round he played\nRed:#fails\nGreen:#stands and % of stands out of games that he bet.\nList is sorted by the % of stands out of the player bets",
   biddingsDistribution: "TODO",
   trumpsDistribution: "TODO",
 }
@@ -49,7 +49,7 @@ class StatisticsScreen extends Component {
               playersRanking: true,
               roundStands: false,
               pointsPerRound: false,
-              betsPercentage: false,
+              playerBets: false,
               biddingsDistribution: false,
               trumpsDistribution: false,
             }
@@ -416,17 +416,17 @@ class StatisticsScreen extends Component {
     };
 
     renderBetGraphs = () => {
-        return (Object.keys(this.state.allPlayersPercentage)
-            .sort((name1, name2) => this.state.allPlayersPercentage[name2].betCount - this.state.allPlayersPercentage[name1].betCount || this.state.allPlayersPercentage[name1].standsCount + this.state.allPlayersPercentage[name1].failCount - this.state.allPlayersPercentage[name2].standsCount + this.state.allPlayersPercentage[name2].failCount)
+      const betCount = name => this.state.allPlayersPercentage[name].betCount;
+      const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
+      const stands = name => this.state.allPlayersPercentage[name].betAndStandsCount;
+      const standsFraction = name => (stands(name) / betCount(name)) || 0;
+      return (Object.keys(this.state.allPlayersPercentage)
+            .sort((name1, name2) => standsFraction(name2) - standsFraction(name1))
             .map((name) => {
-                const betCount = this.state.allPlayersPercentage[name].betCount;
-                const roundsCount = this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
-                const fraction = betCount / roundsCount;
+                const fraction = betCount(name) / roundsCount(name);
                 const percentage = Number((fraction * 100).toFixed(0));
-                const stands = this.state.allPlayersPercentage[name].betAndStandsCount;
-                const fails = betCount - stands;
-                const standsFraction = (stands / betCount) || 0;
-                const standsPercentage = Number((standsFraction * 100).toFixed(0));
+                const fails = betCount(name) - stands(name);
+                const standsPercentage = Number((standsFraction(name) * 100).toFixed(0));
                 return (
                     <View key={name}>
                         <View row>
@@ -437,9 +437,7 @@ class StatisticsScreen extends Component {
                                 width: (CARD_WIDTH * (1 - fraction))
                             }}>
                                 <Text>{`${name.toUpperCase()}`}</Text>
-                                {/*<Text>{`${this.state.allPlayersPercentage[name].betAndStandsCount} stand`}</Text>*/}
-                                {/*<Text style={{fontSize:10}}>{fails}</Text>*/}
-                                <Text>{`${betCount}/${roundsCount}`}</Text>
+                                <Text>{`${betCount(name)}/${roundsCount(name)}`}</Text>
                             </View>
                             <View row center style={{
                                 backgroundColor: Colors.blue60,
@@ -455,7 +453,7 @@ class StatisticsScreen extends Component {
                                 backgroundColor: Colors.red40,
                                 height: 10,
                                 marginBottom: 8,
-                                width: (CARD_WIDTH * (1 - standsFraction))
+                                width: (CARD_WIDTH * (1 - standsFraction(name)))
                             }}>
                                 <Text style={{fontSize:8}}>{name}</Text>
                                 <Text style={{fontSize:8}}>{`${fails} fails `}</Text>
@@ -464,9 +462,9 @@ class StatisticsScreen extends Component {
                                 backgroundColor: Colors.green40,
                                 height: 10,
                                 marginBottom: 8,
-                                width: (CARD_WIDTH * standsFraction)
+                                width: (CARD_WIDTH * standsFraction(name))
                             }}>
-                                <Text style={{fontSize:8}}>{` ${stands} stands`}</Text>
+                                <Text style={{fontSize:8}}>{` ${stands(name)} stands`}</Text>
                                 <Text style={{fontSize:8}}>{`${standsPercentage}%`}</Text>
                             </View>
                         </View>
@@ -599,7 +597,7 @@ class StatisticsScreen extends Component {
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
                           <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("roundStands")}>
-                            {`% round stands${Assets.emojis.information_source}`}
+                            {`% Round stands${Assets.emojis.information_source}`}
                           </Text>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("roundStands")}>
                             {this.state.showCards.roundStands ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
@@ -622,10 +620,14 @@ class StatisticsScreen extends Component {
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10}>{`% Bets (${Assets.emojis.crown})`}</Text>
-                          <Text text40 marginR-5 onPress={() => this.onArrowPress("betsPercentage")}>{this.state.showCards.betsPercentage ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("playerBets")}>
+                            {`Player bets (${Assets.emojis.crown})${Assets.emojis.information_source}`}
+                          </Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("playerBets")}>
+                            {this.state.showCards.playerBets ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
                         </View>
-                        {this.state.showCards.betsPercentage && this.renderBetGraphs()}
+                        {this.state.showCards.playerBets && this.renderBetGraphs()}
                       </Card>
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
