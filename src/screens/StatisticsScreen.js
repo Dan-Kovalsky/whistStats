@@ -5,6 +5,7 @@ import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
 import AsyncStorage from '@react-native-community/async-storage';
+import {cloneDeep} from "lodash"
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 const SCREEN_WIDTH = Dimensions.get('screen').width;
@@ -35,7 +36,16 @@ class StatisticsScreen extends Component {
                 // hearts: 0,
                 // diamonds: 0,
                 // clubs: 0
+            },
+            showCards: {
+              playersRanking: true,
+              roundStands: false,
+              pointsPerRound: false,
+              betsPercentage: false,
+              biddingsDistribution: false,
+              trumpsDistribution: false,
             }
+
         }
     }
 
@@ -95,6 +105,13 @@ class StatisticsScreen extends Component {
         } else {
             const allGames = JSON.parse(allGamesString);
             await this.setState({allGames});
+            Navigation.mergeOptions(this.props.componentId, {
+              topBar: {
+                title: {
+                  text: `Statistics (${allGames.length} games)`
+                }
+              }
+            });
         }
     };
 
@@ -517,6 +534,12 @@ class StatisticsScreen extends Component {
         )
     };
 
+    onArrowPress = (cardStateString) => {
+      const showCards = cloneDeep(this.state.showCards);
+      showCards[cardStateString] = !showCards[cardStateString];
+      this.setState({showCards})
+    }
+
     render() {
         if (this.state.isGamesDataEmpty) {
             return (
@@ -533,56 +556,53 @@ class StatisticsScreen extends Component {
                 <ScrollView style>
                     <Text/>
                     <View center>
-                        {/*<Text>   </Text>*/}
-                        <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
-                            <View>
-                                <Text text40 color={Colors.dark10}>
-                                    % round stands
-                                </Text>
-                                {this.renderStandsGraphs()}
-                            </View>
-                        </Card>
-                        <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
-                            <View>
-                                <Text text40 color={Colors.dark10}>
-                                    Players Ranking
-                                </Text>
-                                {this.renderPlayersRankingGraphs()}
-                            </View>
-                        </Card>
-                        <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
-                            <View center>
-                                <Text text40 color={Colors.dark10}>
-                                    Points Per Round
-                                </Text>
-                                {this.renderPointsPerRoundGraphs()}
-                            </View>
-                        </Card>
-                        <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
-                            <View center>
-                                <Text text40 color={Colors.dark10}>
-                                    {`% Bets (${Assets.emojis.crown})`}
-                                </Text>
-                                {this.renderBetGraphs()}
-                            </View>
-                        </Card>
-                        <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
-                            <View>
-                                <Text text40 color={Colors.dark10}>
-                                    {`Biddings Distribution`}
-                                </Text>
-                                {this.renderBiddingsDistributionGraphs()}
-                            </View>
-                        </Card>
-                        <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
-                            <View>
-                                <Text text40 color={Colors.dark10}>
-                                    {`Trumps Distribution`}
-                                </Text>
-                                {/*{this.renderBiddingsDistributionGraphs()}*/}
-                                {this.renderTrumpsDistributionGraphs()}
-                            </View>
-                        </Card>
+                      <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10}>Players Ranking</Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("playersRanking")}>{this.state.showCards.playersRanking ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                        </View>
+                        {this.state.showCards.playersRanking && this.renderPlayersRankingGraphs()}
+                      </Card>
+
+                      <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10}>% round stands</Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("roundStands")}>{this.state.showCards.roundStands ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                        </View>
+                        {this.state.showCards.roundStands && this.renderStandsGraphs()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10}>Points Per Round</Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("pointsPerRound")}>{this.state.showCards.pointsPerRound ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                        </View>
+                        {this.state.showCards.pointsPerRound && this.renderPointsPerRoundGraphs()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10}>{`% Bets (${Assets.emojis.crown})`}</Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("betsPercentage")}>{this.state.showCards.betsPercentage ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                        </View>
+                        {this.state.showCards.betsPercentage && this.renderBetGraphs()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10}>Biddings Distribution</Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("biddingsDistribution")}>{this.state.showCards.biddingsDistribution ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                        </View>
+                        {this.state.showCards.biddingsDistribution && this.renderBiddingsDistributionGraphs()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10}>Trumps Distribution</Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("trumpsDistribution")}>{this.state.showCards.trumpsDistribution ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                        </View>
+                        {this.state.showCards.trumpsDistribution && this.renderTrumpsDistributionGraphs()}
+                      </Card>
                    </View>
                 </ScrollView>
                 {this.state.loading &&
