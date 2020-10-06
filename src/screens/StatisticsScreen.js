@@ -424,9 +424,9 @@ class StatisticsScreen extends Component {
             .sort((name1, name2) => standsFraction(name2) - standsFraction(name1))
             .map((name) => {
                 const fraction = betCount(name) / roundsCount(name);
-                const percentage = Number((fraction * 100).toFixed(0));
+                const percentage = Number((fraction * 100).toFixed(1));
                 const fails = betCount(name) - stands(name);
-                const standsPercentage = Number((standsFraction(name) * 100).toFixed(0));
+                const standsPercentage = Number((standsFraction(name) * 100).toFixed(2));
                 return (
                     <View key={name}>
                         <View row>
