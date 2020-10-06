@@ -92,8 +92,8 @@ class MyGamesScreen extends Component {
             this.setState({allGames: reversedAllGames});
             Navigation.mergeOptions(this.props.componentId, {
                 topBar: {
-                    title: {
-                        text: `Games History (${reversedAllGames.length})`
+                    subtitle: {
+                        text: `${this.state.allGames.length} Games`
                     }
                 }
             });

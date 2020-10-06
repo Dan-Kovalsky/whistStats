@@ -15,7 +15,7 @@ const CUBE_WIDTH = CARD_WIDTH / 10;
 const INFO_ALERTS = {
   playersRanking: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round.",
   roundStands: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played.",
-  pointsPerRound: "TODO",
+  pointsPerRound: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played.",
   betsPercentage: "TODO",
   biddingsDistribution: "TODO",
   trumpsDistribution: "TODO",
@@ -102,8 +102,11 @@ class StatisticsScreen extends Component {
             const roundsCount = Object.keys(this.state.trumpsDistribution).reduce((sum,key) => sum + this.state.trumpsDistribution[key], 0);
             Navigation.mergeOptions(this.props.componentId, {
               topBar: {
-                title: {
-                  text: `Statistics (${this.state.allGames.length} G, ${roundsCount} R)`
+                // title: {
+                //   text: `Statistics (${this.state.allGames.length} G, ${roundsCount} R)`
+                // },
+                subtitle: {
+                  text: `${this.state.allGames.length} Games, ${roundsCount} Rounds`
                 }
               }
             });
@@ -344,14 +347,15 @@ class StatisticsScreen extends Component {
     };
 
     renderPointsPerRoundGraphs = () => {
-        const maxValue = Math.max(...(Object.keys(this.state.allPlayersPercentage).map((name) => Math.abs(this.state.allPlayersPercentage[name].sumOfPoints/ (this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount)))));
-        return (Object.keys(this.state.allPlayersPercentage)
-            .sort((name1, name2) => this.state.allPlayersPercentage[name2].sumOfPoints - this.state.allPlayersPercentage[name1].sumOfPoints)
+      const maxValue = Math.max(...(Object.keys(this.state.allPlayersPercentage).map((name) => Math.abs(this.state.allPlayersPercentage[name].sumOfPoints/ (this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount)))));
+      const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
+      const sumOfPoints = name => this.state.allPlayersPercentage[name].sumOfPoints;
+      const ppr = name => sumOfPoints(name) / roundsCount(name);
+      return (Object.keys(this.state.allPlayersPercentage)
+            .sort((name1, name2) => ppr(name2) - ppr(name1))
             .map((name) => {
-                const roundsCount = this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
-                const ppr = this.state.allPlayersPercentage[name].sumOfPoints / roundsCount;
-                const fractionFromMax = Math.abs(ppr) / maxValue;
-                if (ppr < 0) {
+                const fractionFromMax = Math.abs(ppr(name)) / maxValue;
+                if (ppr(name) < 0) {
                     return (
                         <View key={name} row>
                             <View flex right style={{
@@ -365,7 +369,7 @@ class StatisticsScreen extends Component {
                                     height: 20,
                                     width: ((CARD_WIDTH / 2) * fractionFromMax)
                                 }}>
-                                    <Text>{` ${ppr.toFixed(0)} `}</Text>
+                                    <Text>{ppr(name).toFixed(2)}</Text>
                                 </View>
                             </View>
                             <View flex row spread style={{
@@ -374,7 +378,7 @@ class StatisticsScreen extends Component {
                                 width: (CARD_WIDTH / 2)
                             }}>
                                     <Text>{`${name.toUpperCase()}`}</Text>
-                                    <Text>{`${this.state.allPlayersPercentage[name].sumOfPoints}Pts/${roundsCount}Rd`}</Text>
+                                    <Text>{`${sumOfPoints(name)}Pts/${roundsCount(name)}Rd`}</Text>
                             </View>
                         </View>
                     )
@@ -388,7 +392,7 @@ class StatisticsScreen extends Component {
                                 width: (CARD_WIDTH / 2)
                             }}>
                                 <Text>{`${name.toUpperCase()}`}</Text>
-                                <Text>{`${this.state.allPlayersPercentage[name].sumOfPoints}Pts/${roundsCount}Rd`}</Text>
+                                <Text>{`${sumOfPoints(name)}Pts/${roundsCount(name)}Rd`}</Text>
                             </View>
                             <View flex style={{
                                 height: 20,
@@ -400,7 +404,7 @@ class StatisticsScreen extends Component {
                                     height: 20,
                                     width: (CARD_WIDTH/2 * fractionFromMax)
                                 }}>
-                                    <Text>{` ${ppr.toFixed(0)} `}</Text>
+                                    <Text>{ppr(name).toFixed(2)}</Text>
                                 </View>
                             </View>
                         </View>
@@ -606,8 +610,12 @@ class StatisticsScreen extends Component {
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10}>Points Per Round</Text>
-                          <Text text40 marginR-5 onPress={() => this.onArrowPress("pointsPerRound")}>{this.state.showCards.pointsPerRound ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("pointsPerRound")}>
+                            {`Points Per Round${Assets.emojis.information_source}`}
+                          </Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("pointsPerRound")}>
+                            {this.state.showCards.pointsPerRound ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
                         </View>
                         {this.state.showCards.pointsPerRound && this.renderPointsPerRoundGraphs()}
                       </Card>
