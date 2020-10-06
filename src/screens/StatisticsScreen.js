@@ -90,16 +90,25 @@ class StatisticsScreen extends Component {
     }
 
     componentDidMount() {
-        this.getAllGamesFromStorage().then(() => {
-                this.setState({
-                    allPlayersPercentage: this.calcStandsPercentage(),
-                    biddingsDistribution: this.calcBiddingsDistribution(),
-                    standsPerBidding: this.calcStandsPerBidding(),
-                    trumpsDistribution: this.calcTrumpsDistribution()},
-                    () =>{this.setState({loading: false})}
-                    );
-            }
-        )
+      this.getAllGamesFromStorage().then(() => {
+        this.setState({
+            allPlayersPercentage: this.calcStandsPercentage(),
+            biddingsDistribution: this.calcBiddingsDistribution(),
+            standsPerBidding: this.calcStandsPerBidding(),
+            trumpsDistribution: this.calcTrumpsDistribution()
+          },
+          () => {
+            this.setState({loading: false});
+            const roundsCount = Object.keys(this.state.trumpsDistribution).reduce((sum,key) => sum + this.state.trumpsDistribution[key], 0);
+            Navigation.mergeOptions(this.props.componentId, {
+              topBar: {
+                title: {
+                  text: `Statistics (${this.state.allGames.length} G, ${roundsCount} R)`
+                }
+              }
+            });
+          });
+      })
     }
 
     componentWillMount() {
@@ -111,15 +120,8 @@ class StatisticsScreen extends Component {
         if (allGamesString === null) {
             this.setState({isGamesDataEmpty: true})
         } else {
-            const allGames = JSON.parse(allGamesString);
-            await this.setState({allGames});
-            Navigation.mergeOptions(this.props.componentId, {
-              topBar: {
-                title: {
-                  text: `Statistics (${allGames.length} games)`
-                }
-              }
-            });
+          const allGames = JSON.parse(allGamesString);
+          await this.setState({allGames});
         }
     };
 
