@@ -17,10 +17,10 @@ const SCREEN_WIDTH = Dimensions.get('screen').width;
 const CUBE_WIDTH = SCREEN_WIDTH / 11;
 
 const titles = [
-    'Important!'
+    'Important- SAVE GAME!'
 ];
 const messages = [
-    'After the last round, remember to save the game to your games history',
+    'After the last round of the game, remember to press SAVE GAME to save your games history.\nPress BACK on the top right corner to play next round',
 ];
 
 class TableScreen extends Component {

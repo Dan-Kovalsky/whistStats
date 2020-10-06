@@ -15,14 +15,14 @@ const SOUTH_NAME_KEY = '@WhistStats:NewGameScreen:southName';
 
 
 const titles = [
-    'All Players List',
-    'Your Name',
+    'All Names List',
+    'My Name',
     'Start New Game',
 ];
 const messages = [
-    'First add your name and all of your friend`s names to the list\nYou can delete and add new names always',
-    'Write your name. It must be identical to the list',
-    'Add Names from Players List according to sitting order on table, and click START at the top right',
+    'First add your name and all of your friend`s names to the list.\nYou can delete and add new names always.',
+    'Write your name. It must be identical to the list.',
+    'Add Names from All Names List according to sitting order on table, and click START at the top right corner.',
 ];
 
 class NewGameScreen extends Component {
@@ -78,7 +78,7 @@ class NewGameScreen extends Component {
         let optionalNames = [];
         let optionalNamesListStr = await AsyncStorage.getItem(OPTIONAL_NAMES_KEY);
         if (optionalNamesListStr == null) {
-            const optionalNamesExample = [{name: 'GalDelete'},{name: 'DanKov'},{name: 'Ben Demo'}];
+            const optionalNamesExample = [{name: 'DanKov'},{name: 'Gal Demo'}];
             await this.saveNamesToStorage(optionalNamesExample);
             optionalNames = optionalNamesExample;
         }
