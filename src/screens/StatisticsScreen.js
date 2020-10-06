@@ -10,8 +10,16 @@ import {cloneDeep} from "lodash"
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 const CARD_WIDTH = SCREEN_WIDTH - 40;
-const CUBE_WIDTH = CARD_WIDTH / 9;
+const CUBE_WIDTH = CARD_WIDTH / 10;
 
+const INFO_ALERTS = {
+  playersRanking: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round",
+  roundStands: "TODO",
+  pointsPerRound: "TODO",
+  betsPercentage: "TODO",
+  biddingsDistribution: "TODO",
+  trumpsDistribution: "TODO",
+}
 
 class StatisticsScreen extends Component {
 
@@ -128,6 +136,7 @@ class StatisticsScreen extends Component {
                                 failCount: 0,
                                 betCount: 0,
                                 betAndStandsCount: 0,
+                                gamesCount: 0,
                                 gamesRanking: [0,0,0,0],
                                 sumOfPoints: 0
                             }
@@ -137,6 +146,7 @@ class StatisticsScreen extends Component {
                 const gameScore = game.roundsHistory[game.roundsHistory.length - 1].points;
                 Object.keys(gameScore).sort((location1, location2) => gameScore[location2] - gameScore[location1]).forEach(
                     (location, index) => {
+                        playerRoundsMap[game.playerNamesObj[`${location}Name`]].gamesCount++;
                         playerRoundsMap[game.playerNamesObj[`${location}Name`]].gamesRanking[index]++;
                         playerRoundsMap[game.playerNamesObj[`${location}Name`]].sumOfPoints += gameScore[location];
                     }
@@ -146,11 +156,6 @@ class StatisticsScreen extends Component {
                     round => {
                         round.isStand.north ? playerRoundsMap[game.playerNamesObj.northName].standsCount++ :
                             playerRoundsMap[game.playerNamesObj.northName].failCount++;
-                        // if (round.isStand.north)  {
-                        //     playerRoundsMap[game.playerNamesObj.northName].standsCount++
-                        // } else {
-                        //     playerRoundsMap[game.playerNamesObj.northName].failCount++;
-                        // }
                         if (round.didBet.north) {
                             playerRoundsMap[game.playerNamesObj.northName].betCount++;
                             if (round.isStand.north) {
@@ -188,7 +193,6 @@ class StatisticsScreen extends Component {
                 )
             }
         );
-        // console.log("playerRoundsMap = " + JSON.stringify(playerRoundsMap));
         return playerRoundsMap
     };
 
@@ -285,20 +289,22 @@ class StatisticsScreen extends Component {
         return (
             <View row style={{height: 30}}>
                 <Text style={{width: CUBE_WIDTH *3}}> </Text>
+                <Text style={{width: CUBE_WIDTH}}> G</Text>
                 <Text style={{width: CUBE_WIDTH *2}}>PTS</Text>
                 <Text style={{width: CUBE_WIDTH}}>W</Text>
                 <Text style={{width: CUBE_WIDTH}}>2nd</Text>
-                <Text style={{width: CUBE_WIDTH}}>3rd</Text>
-                <Text style={{width: CUBE_WIDTH}}>L</Text>
+                <Text style={{width: CUBE_WIDTH}}> 3rd</Text>
+                <Text style={{width: CUBE_WIDTH}}>  L</Text>
             </View>
         )
     };
 
-    renderLine = item => {
+    renderPlayerRankingLine = item => {
         const rankingPoints = this.calcPoints(this.state.allPlayersPercentage[item.item].gamesRanking);
         return (
             <View row style={{height: 20}}>
                 <Text style={{width: CUBE_WIDTH *3}}>{` ${item.index + 1}.  ${item.item.toUpperCase()}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item.item].gamesCount}`}</Text>
                 <Text style={{width: CUBE_WIDTH *2, fontWeight: 'bold'}}>{`  ${rankingPoints >= 0 ?" ":""}${rankingPoints}`}</Text>
                 <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item.item].gamesRanking[0]}`}</Text>
                 <Text style={{width: CUBE_WIDTH}}>{`  ${this.state.allPlayersPercentage[item.item].gamesRanking[1]}`}</Text>
@@ -310,14 +316,26 @@ class StatisticsScreen extends Component {
 
     renderPlayersRankingGraphs = () => {
         const sortedData = Object.keys(this.state.allPlayersPercentage)
-            .sort((name1, name2) => this.calcPoints(this.state.allPlayersPercentage[name2].gamesRanking) - this.calcPoints(this.state.allPlayersPercentage[name1].gamesRanking));
+            .sort((name1, name2) => {
+              const score = name => this.calcPoints(this.state.allPlayersPercentage[name].gamesRanking);
+              const gamesCount = name => this.state.allPlayersPercentage[name].gamesCount;
+              const winCount = name => this.state.allPlayersPercentage[name].gamesRanking[0];
+              const ppr = name => this.state.allPlayersPercentage[name].sumOfPoints / gamesCount(name);
+
+              return (
+                score(name2) - score(name1)
+                || gamesCount(name1) - gamesCount(name2)
+                || winCount(name2) - winCount(name1)
+                || ppr(name2) - ppr(name1)
+              )
+            });
         return (
             <View flex>
                 {this.renderTableTitle()}
                 <FlatList
                     keyExtractor={(item) => item}
                     data={sortedData}
-                    renderItem={this.renderLine}
+                    renderItem={this.renderPlayerRankingLine}
                 />
             </View>
         );
@@ -538,7 +556,11 @@ class StatisticsScreen extends Component {
       const showCards = cloneDeep(this.state.showCards);
       showCards[cardStateString] = !showCards[cardStateString];
       this.setState({showCards})
-    }
+    };
+
+    onInfoPress = (cardStateString) => {
+      alert(INFO_ALERTS[cardStateString]);
+    };
 
     render() {
         if (this.state.isGamesDataEmpty) {
@@ -558,8 +580,12 @@ class StatisticsScreen extends Component {
                     <View center>
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10}>Players Ranking</Text>
-                          <Text text40 marginR-5 onPress={() => this.onArrowPress("playersRanking")}>{this.state.showCards.playersRanking ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}</Text>
+                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("playersRanking")}>
+                            {`Players Ranking${Assets.emojis.information_source}`}
+                          </Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("playersRanking")}>
+                            {this.state.showCards.playersRanking ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
                         </View>
                         {this.state.showCards.playersRanking && this.renderPlayersRankingGraphs()}
                       </Card>
