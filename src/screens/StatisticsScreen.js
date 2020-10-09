@@ -6,6 +6,7 @@ import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
 import AsyncStorage from '@react-native-community/async-storage';
 import {cloneDeep} from "lodash"
+import {BONUS_POINTS_FOR_5_ROW} from "../constants/Points";
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 const SCREEN_WIDTH = Dimensions.get('screen').width;
@@ -17,6 +18,8 @@ const INFO_ALERTS = {
   roundStands: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played.",
   pointsPerRound: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played.",
   playerBets: "For each player:\nWhite:#bets out of #rounds he played\nBlue:% of bets out the round he played\nRed:#fails\nGreen:#stands and % of stands out of games that he bet.\nList is sorted by the % of stands out of the player bets",
+  sequences: "sequences TODO",
+  upDownRatio: "TODO",
   biddingsDistribution: "TODO",
   trumpsDistribution: "TODO",
 }
@@ -39,6 +42,8 @@ class StatisticsScreen extends Component {
             allPlayersPercentage: {},
             biddingsDistribution: [],
             standsPerBidding: [],
+            upsCount: 0,
+            downsCount: 0,
             trumpsDistribution: {
                 // spades: 0,
                 // hearts: 0,
@@ -50,6 +55,9 @@ class StatisticsScreen extends Component {
               roundStands: false,
               pointsPerRound: false,
               playerBets: false,
+              sequences: false,
+              upDownRatio: false,
+              roundFails: false,
               biddingsDistribution: false,
               trumpsDistribution: false,
             }
@@ -93,7 +101,6 @@ class StatisticsScreen extends Component {
       this.getAllGamesFromStorage().then(() => {
         this.setState({
             allPlayersPercentage: this.calcStandsPercentage(),
-            biddingsDistribution: this.calcBiddingsDistribution(),
             standsPerBidding: this.calcStandsPerBidding(),
             trumpsDistribution: this.calcTrumpsDistribution()
           },
@@ -143,7 +150,11 @@ class StatisticsScreen extends Component {
                                 betAndStandsCount: 0,
                                 gamesCount: 0,
                                 gamesRanking: [0,0,0,0],
-                                sumOfPoints: 0
+                                sumOfPoints: 0,
+                                bonusesCount: 0,
+                                maxSequence: 0,
+                                maxSequenceAccumulate: 0,
+                                curSequenceAccumulate: 0
                             }
                     }
                 });
@@ -159,41 +170,81 @@ class StatisticsScreen extends Component {
 
                 game.roundsHistory.forEach(
                     round => {
-                        round.isStand.north ? playerRoundsMap[game.playerNamesObj.northName].standsCount++ :
-                            playerRoundsMap[game.playerNamesObj.northName].failCount++;
-                        if (round.didBet.north) {
-                            playerRoundsMap[game.playerNamesObj.northName].betCount++;
-                            if (round.isStand.north) {
-                                playerRoundsMap[game.playerNamesObj.northName].betAndStandsCount++;
-                            }
+                      const northPlayer = playerRoundsMap[game.playerNamesObj.northName];
+                      round.isStand.north ? northPlayer.standsCount++ : northPlayer.failCount++;
+                      if (round.didBet.north) {
+                        northPlayer.betCount++;
+                        if (round.isStand.north) {
+                          northPlayer.betAndStandsCount++;
                         }
+                      }
+                      if (round.curSequence.north > 0 && round.curSequence.north % 5 === 0) {
+                        northPlayer.bonusesCount ++;
+                      }
+                      northPlayer.maxSequence = Math.max(northPlayer.maxSequence, round.curSequence.north);
+                      if (round.curSequence.north === 0) {
+                        northPlayer.curSequenceAccumulate = 0;
+                      } else {
+                        northPlayer.curSequenceAccumulate ++;
+                        northPlayer.maxSequenceAccumulate = Math.max(northPlayer.maxSequenceAccumulate, northPlayer.curSequenceAccumulate)
+                      }
 
-                        round.isStand.west ? playerRoundsMap[game.playerNamesObj.westName].standsCount++ :
-                            playerRoundsMap[game.playerNamesObj.westName].failCount++;
-                        if (round.didBet.west) {
-                            playerRoundsMap[game.playerNamesObj.westName].betCount++;
-                            if (round.isStand.west) {
-                                playerRoundsMap[game.playerNamesObj.westName].betAndStandsCount++;
-                            }
+                      const westPlayer = playerRoundsMap[game.playerNamesObj.westName];
+                      round.isStand.west ? westPlayer.standsCount++ : westPlayer.failCount++;
+                      if (round.didBet.west) {
+                        westPlayer.betCount++;
+                        if (round.isStand.west) {
+                          westPlayer.betAndStandsCount++;
                         }
+                      }
+                      if (round.curSequence.west > 0 && round.curSequence.west % 5 === 0) {
+                        westPlayer.bonusesCount ++;
+                      }
+                      westPlayer.maxSequence = Math.max(westPlayer.maxSequence, round.curSequence.west);
+                      if (round.curSequence.west === 0) {
+                        westPlayer.curSequenceAccumulate = 0;
+                      } else {
+                        westPlayer.curSequenceAccumulate ++;
+                        westPlayer.maxSequenceAccumulate = Math.max(westPlayer.maxSequenceAccumulate, westPlayer.curSequenceAccumulate)
+                      }
 
-                        round.isStand.east ? playerRoundsMap[game.playerNamesObj.eastName].standsCount++ :
-                            playerRoundsMap[game.playerNamesObj.eastName].failCount++;
+                      const eastPlayer = playerRoundsMap[game.playerNamesObj.eastName];
+                      round.isStand.east ? eastPlayer.standsCount++ : eastPlayer.failCount++;
                         if (round.didBet.east) {
-                            playerRoundsMap[game.playerNamesObj.eastName].betCount++;
-                            if (round.isStand.east) {
-                                playerRoundsMap[game.playerNamesObj.eastName].betAndStandsCount++;
-                            }
+                          eastPlayer.betCount++;
+                          if (round.isStand.east) {
+                            eastPlayer.betAndStandsCount++;
+                          }
                         }
+                      if (round.curSequence.east > 0 && round.curSequence.east % 5 === 0) {
+                        eastPlayer.bonusesCount ++;
+                      }
+                      eastPlayer.maxSequence = Math.max(eastPlayer.maxSequence, round.curSequence.east);
+                      if (round.curSequence.east === 0) {
+                        eastPlayer.curSequenceAccumulate = 0;
+                      } else {
+                        eastPlayer.curSequenceAccumulate ++;
+                        eastPlayer.maxSequenceAccumulate = Math.max(eastPlayer.maxSequenceAccumulate, eastPlayer.curSequenceAccumulate)
+                      }
 
-                        round.isStand.south ? playerRoundsMap[game.playerNamesObj.southName].standsCount++ :
-                            playerRoundsMap[game.playerNamesObj.southName].failCount++;
-                        if (round.didBet.south) {
-                            playerRoundsMap[game.playerNamesObj.southName].betCount++;
-                            if (round.isStand.south) {
-                                playerRoundsMap[game.playerNamesObj.southName].betAndStandsCount++;
-                            }
+                      const southPlayer = playerRoundsMap[game.playerNamesObj.southName];
+                      round.isStand.south ? southPlayer.standsCount++ : southPlayer.failCount++;
+                      if (round.didBet.south) {
+                        southPlayer.betCount++;
+                        if (round.isStand.south) {
+                          southPlayer.betAndStandsCount++;
                         }
+                      }
+                      if (round.curSequence.south > 0 && round.curSequence.south % 5 === 0) {
+                        southPlayer.bonusesCount ++;
+                      }
+                      southPlayer.maxSequence = Math.max(southPlayer.maxSequence, round.curSequence.south);
+                      if (round.curSequence.west === 0) {
+                        westPlayer.curSequenceAccumulate = 0;
+                      } else {
+                        westPlayer.curSequenceAccumulate ++;
+                        westPlayer.maxSequenceAccumulate = Math.max(westPlayer.maxSequenceAccumulate, westPlayer.curSequenceAccumulate)
+                      }
                     }
                 )
             }
@@ -236,6 +287,42 @@ class StatisticsScreen extends Component {
             }
         );
         return bidsArray
+    };
+
+    calcRoundFails = () => {
+        let roundFailsCount = 0
+        this.state.allGames.forEach(
+            game => {
+                game.roundsHistory.forEach(
+                    round => {
+                        if(round.isRoundFail) {
+                          roundFailsCount++;
+                        }
+                    }
+                )
+            }
+        );
+        return roundFailsCount
+    };
+
+    calcUpDownRatio = () => {
+        let upsCount = 0, downsCount = 0
+        this.state.allGames.forEach(
+            game => {
+                game.roundsHistory.forEach(
+                    round => {
+                        if(round.upDown > 0) {
+                          upsCount++;
+                        } else if(round.upDown < 0) {
+                          downsCount++;
+                        } else {
+                          console.warn("calcUpDownRatio: found round with upDown=0")
+                        }
+                    }
+                )
+            }
+        );
+        return {upsCount, downsCount}
     };
 
     calcStandsPerBidding = () => {
@@ -415,6 +502,81 @@ class StatisticsScreen extends Component {
         )
     };
 
+    renderSequencesGraphs = () => {
+      const bonusesCount = name => this.state.allPlayersPercentage[name].bonusesCount;
+      let bonusesCountMax = 0;
+      const maxSequence = name => this.state.allPlayersPercentage[name].maxSequence;
+      const maxSequenceAccumulate = name => this.state.allPlayersPercentage[name].maxSequenceAccumulate;
+
+      const bonusCountGraph = Object.keys(this.state.allPlayersPercentage)
+        .sort((name1, name2) => bonusesCount(name2) - bonusesCount(name1))
+        .map((name) => {
+          if (bonusesCountMax === 0) {
+            bonusesCountMax = bonusesCount(name);
+          }
+          const fraction = bonusesCount(name) / bonusesCountMax;
+          return (
+            <View key={name}>
+              <View row spread style={{
+                backgroundColor: Colors.red80,
+                height: 20,
+                marginBottom: 1,
+                // width: (CARD_WIDTH * fraction)
+              }}>
+                <Text style={{fontWeight:"bold"}}>{`${name.toUpperCase()}`}</Text>
+                <Text>{`seq:${bonusesCount(name)}(${bonusesCount(name) * BONUS_POINTS_FOR_5_ROW}pts)`}</Text>
+              </View>
+            </View>
+          )
+        });
+
+      const maxSequenceGraph = Object.keys(this.state.allPlayersPercentage)
+        .sort((name1, name2) => maxSequence(name2) - maxSequence(name1))
+        .map((name) => {
+          return (
+            <View key={name}>
+              <View row spread style={{
+                backgroundColor: Colors.yellow80,
+                height: 20,
+                marginBottom: 1,
+                // width: (CARD_WIDTH * fraction)
+              }}>
+                <Text style={{fontWeight:"bold"}}>{`${name.toUpperCase()}`}</Text>
+                <Text>{`max:${maxSequence(name)}`}</Text>
+              </View>
+            </View>
+          )
+        });
+
+      const maxAccumulateSequenceGraph = Object.keys(this.state.allPlayersPercentage)
+        .sort((name1, name2) => maxSequenceAccumulate(name2) - maxSequenceAccumulate(name1))
+        .map((name) => {
+          return (
+            <View key={name}>
+              <View row spread style={{
+                backgroundColor: Colors.green80,
+                height: 20,
+                marginBottom: 1,
+                // width: (CARD_WIDTH * fraction)
+              }}>
+                <Text style={{fontWeight:"bold"}}>{`${name.toUpperCase()}`}</Text>
+                <Text>{`acc:${maxSequenceAccumulate(name)}`}</Text>
+              </View>
+            </View>
+          )
+        });
+        return (
+          <View>
+            <Text>Bonuses count</Text>
+            {bonusCountGraph}
+            <Text>Max sequence</Text>
+            {maxSequenceGraph}
+            <Text>Max Accumulate sequence</Text>
+            {maxAccumulateSequenceGraph}
+          </View>
+        )
+    };
+
     renderBetGraphs = () => {
       const betCount = name => this.state.allPlayersPercentage[name].betCount;
       const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
@@ -474,10 +636,55 @@ class StatisticsScreen extends Component {
         )
     };
 
+  renderRoundFails = () => {
+    const roundFailsCount = this.calcRoundFails();
+    const roundsCount = Object.keys(this.state.trumpsDistribution).reduce((sum,key) => sum + this.state.trumpsDistribution[key], 0);
+    const percentage = (roundFailsCount/ roundsCount) * 100;
+
+    return (
+      <View style={{marginBottom:8}}>
+        <Text>
+          <Text style={{fontWeight: 'bold'}}>{roundFailsCount}</Text>
+          <Text>{` failed out of ${roundsCount} rounds that played - `}</Text>
+          <Text style={{fontWeight: 'bold'}}>{`${Number(percentage).toFixed(1)}%`}</Text>
+        </Text>
+      </View>
+    )
+  };
+
+  renderUpDownRatio = () => {
+    const {downsCount, upsCount} = this.calcUpDownRatio();
+    const downFraction = downsCount / (downsCount + upsCount);
+    const downPercentage = Number((downFraction * 100).toFixed(1))
+    return (
+      <View row>
+        <View row spread style={{
+          backgroundColor: "cyan",
+          height: 20,
+          marginBottom: 8,
+          width: (CARD_WIDTH*downFraction)
+        }}>
+          <Text>down</Text>
+          <Text>{`${downPercentage}%`}</Text>
+        </View>
+        <View row spread style={{
+          backgroundColor: "magenta",
+          height: 20,
+          marginBottom: 8,
+          width: (CARD_WIDTH*(1 - downFraction))
+        }}>
+          <Text>up</Text>
+          <Text>{`${100 - downPercentage}%`}</Text>
+        </View>
+      </View>
+    )
+  };
+
     renderBiddingsDistributionGraphs = () => {
-        const allRoundsCount = this.state.biddingsDistribution.reduce((a,b) => a + b, 0);
-        const maxValue = Math.max(...this.state.biddingsDistribution);
-        return this.state.biddingsDistribution.map((bidCount, index) => {
+        const biddingsDistribution = this.calcBiddingsDistribution();
+        const allRoundsCount = biddingsDistribution.reduce((a,b) => a + b, 0);
+        const maxValue = Math.max(...biddingsDistribution);
+        return biddingsDistribution.map((bidCount, index) => {
             const fraction = bidCount / allRoundsCount;
             const fractionToRender = bidCount / maxValue;
             const percentage = Number((fraction * 100).toFixed(0));
@@ -584,9 +791,10 @@ class StatisticsScreen extends Component {
                     <View center>
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("playersRanking")}>
-                            {`Players Ranking${Assets.emojis.information_source}`}
-                          </Text>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>Players Ranking</Text>
+                            <Text text60 onPress={() => this.onInfoPress("playersRanking")}>{Assets.emojis.information_source}</Text>
+                          </View>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("playersRanking")}>
                             {this.state.showCards.playersRanking ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
                           </Text>
@@ -596,9 +804,10 @@ class StatisticsScreen extends Component {
 
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("roundStands")}>
-                            {`% Round stands${Assets.emojis.information_source}`}
-                          </Text>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>% Round stands</Text>
+                            <Text text60 onPress={() => this.onInfoPress("roundStands")}>{Assets.emojis.information_source}</Text>
+                          </View>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("roundStands")}>
                             {this.state.showCards.roundStands ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
                           </Text>
@@ -608,9 +817,10 @@ class StatisticsScreen extends Component {
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("pointsPerRound")}>
-                            {`Points Per Round${Assets.emojis.information_source}`}
-                          </Text>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>Points Per Round</Text>
+                            <Text text60 onPress={() => this.onInfoPress("pointsPerRound")}>{Assets.emojis.information_source}</Text>
+                          </View>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("pointsPerRound")}>
                             {this.state.showCards.pointsPerRound ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
                           </Text>
@@ -620,14 +830,52 @@ class StatisticsScreen extends Component {
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
-                          <Text text40 color={Colors.dark10} onPress={() => this.onInfoPress("playerBets")}>
-                            {`Player bets (${Assets.emojis.crown})${Assets.emojis.information_source}`}
-                          </Text>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>{`Player bets(${Assets.emojis.crown})`}</Text>
+                            <Text text60 onPress={() => this.onInfoPress("playerBets")}>{Assets.emojis.information_source}</Text>
+                          </View>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("playerBets")}>
                             {this.state.showCards.playerBets ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
                           </Text>
                         </View>
                         {this.state.showCards.playerBets && this.renderBetGraphs()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>{`Sequences(${Assets.emojis.tada})`}</Text>
+                            <Text text60 onPress={() => this.onInfoPress("sequences")}>{Assets.emojis.information_source}</Text>
+                          </View>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("sequences")}>
+                            {this.state.showCards.sequences ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
+                        </View>
+                        {this.state.showCards.sequences && this.renderSequencesGraphs()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10} _onPress={() => this.onInfoPress("upDownRatio")}>
+                            {`Up/Down(${Assets.emojis.heavy_plus_sign}${Assets.emojis.heavy_minus_sign})`}
+                          </Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("upDownRatio")}>
+                            {this.state.showCards.upDownRatio ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
+                        </View>
+                        {this.state.showCards.upDownRatio && this.renderUpDownRatio()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <Text text40 color={Colors.dark10} _onPress={() => this.onInfoPress("roundFails")}>
+                            {`Failed rounds(${Assets.emojis.boom})`}
+                          </Text>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("roundFails")}>
+                            {this.state.showCards.roundFails ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
+                        </View>
+                        {this.state.showCards.roundFails && this.renderRoundFails()}
                       </Card>
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
