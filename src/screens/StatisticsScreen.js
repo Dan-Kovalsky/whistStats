@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {FlatList, ScrollView, Dimensions} from 'react-native';
+import {FlatList, ScrollView, Dimensions, Alert} from 'react-native';
 import {Text, View, Colors, Assets, Card, LoaderScreen, StateScreen} from 'react-native-ui-lib';
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
@@ -14,14 +14,14 @@ const CARD_WIDTH = SCREEN_WIDTH - 40;
 const CUBE_WIDTH = CARD_WIDTH / 10;
 
 const INFO_ALERTS = {
-  playersRanking: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round.",
-  roundStands: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played.",
-  pointsPerRound: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played.",
-  playerBets: "For each player:\nWhite:#bets out of #rounds he played\nBlue:% of bets out the round he played\nRed:#fails\nGreen:#stands and % of stands out of games that he bet.\nList is sorted by the % of stands out of the player bets",
-  sequences: "sequences TODO",
-  upDownRatio: "TODO",
-  biddingsDistribution: "TODO",
-  trumpsDistribution: "TODO",
+  playersRanking: {title: "Players Ranking", message: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round."},
+  roundStands: {title: "% Round Stands", message: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played."},
+  pointsPerRound: {title: "Points Per Round", message: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played."},
+  playerBets: {title: "Player Bets", message: "For each player:\nWhite:#bets out of #rounds he played\nBlue:% of bets out the round he played\nRed:#fails\nGreen:#stands and % of stands out of games that he bet.\nList is sorted by the % of stands out of the player bets"},
+  sequences: {title: "Sequences", message: "Bonuses count: how many times player achieve bonus(sequence of 5 stands).\nMax sequence: longest sequence of stands in a game.\nMax accumulate sequence: longest sequence of stands in more then one game"},
+  upDownRatio: {title: "title", message: "TODO"},
+  biddingsDistribution: {title: "title", message: "TODO"},
+  trumpsDistribution: {title: "title", message: "TODO"},
 }
 
 class StatisticsScreen extends Component {
@@ -523,8 +523,9 @@ class StatisticsScreen extends Component {
                 marginBottom: 1,
                 // width: (CARD_WIDTH * fraction)
               }}>
-                <Text style={{fontWeight:"bold"}}>{`${name.toUpperCase()}`}</Text>
-                <Text>{`seq:${bonusesCount(name)}(${bonusesCount(name) * BONUS_POINTS_FOR_5_ROW}pts)`}</Text>
+                <Text>{`${name.toUpperCase()}`}</Text>
+                <Text>{`${bonusesCount(name)}(${bonusesCount(name) * BONUS_POINTS_FOR_5_ROW}pts)`}</Text>
+                <Text>{` `}</Text>
               </View>
             </View>
           )
@@ -541,8 +542,9 @@ class StatisticsScreen extends Component {
                 marginBottom: 1,
                 // width: (CARD_WIDTH * fraction)
               }}>
-                <Text style={{fontWeight:"bold"}}>{`${name.toUpperCase()}`}</Text>
-                <Text>{`max:${maxSequence(name)}`}</Text>
+                <Text>{`${name.toUpperCase()}`}</Text>
+                <Text>{`${maxSequence(name)}`}</Text>
+                <Text>{` `}</Text>
               </View>
             </View>
           )
@@ -559,19 +561,20 @@ class StatisticsScreen extends Component {
                 marginBottom: 1,
                 // width: (CARD_WIDTH * fraction)
               }}>
-                <Text style={{fontWeight:"bold"}}>{`${name.toUpperCase()}`}</Text>
-                <Text>{`acc:${maxSequenceAccumulate(name)}`}</Text>
+                <Text>{`${name.toUpperCase()}`}</Text>
+                <Text>{`${maxSequenceAccumulate(name)}`}</Text>
+                <Text>{` `}</Text>
               </View>
             </View>
           )
         });
         return (
           <View>
-            <Text>Bonuses count</Text>
+            <Text style={{fontWeight: 'bold'}}>Bonuses count</Text>
             {bonusCountGraph}
-            <Text>Max sequence</Text>
+            <Text style={{fontWeight: 'bold'}}>Max sequence</Text>
             {maxSequenceGraph}
-            <Text>Max Accumulate sequence</Text>
+            <Text style={{fontWeight: 'bold'}}>Max accumulate sequence</Text>
             {maxAccumulateSequenceGraph}
           </View>
         )
@@ -582,58 +585,82 @@ class StatisticsScreen extends Component {
       const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
       const stands = name => this.state.allPlayersPercentage[name].betAndStandsCount;
       const standsFraction = name => (stands(name) / betCount(name)) || 0;
-      return (Object.keys(this.state.allPlayersPercentage)
-            .sort((name1, name2) => standsFraction(name2) - standsFraction(name1))
-            .map((name) => {
-                const fraction = betCount(name) / roundsCount(name);
-                const percentage = Number((fraction * 100).toFixed(1));
-                const fails = betCount(name) - stands(name);
-                const standsPercentage = Number((standsFraction(name) * 100).toFixed(2));
-                return (
-                    <View key={name}>
-                        <View row>
-                            <View row spread style={{
-                                backgroundColor: '#f9f9f9',
-                                height: 20,
-                                marginBottom: 1,
-                                width: (CARD_WIDTH * (1 - fraction))
-                            }}>
-                                <Text>{`${name.toUpperCase()}`}</Text>
-                                <Text>{`${betCount(name)}/${roundsCount(name)}`}</Text>
-                            </View>
-                            <View row center style={{
-                                backgroundColor: Colors.blue60,
-                                height: 20,
-                                marginBottom: 1,
-                                width: (CARD_WIDTH * fraction)
-                            }}>
-                                <Text>{`${percentage}%`}</Text>
-                            </View>
-                        </View>
-                        <View row>
-                            <View row spread style={{
-                                backgroundColor: Colors.red40,
-                                height: 10,
-                                marginBottom: 8,
-                                width: (CARD_WIDTH * (1 - standsFraction(name)))
-                            }}>
-                                <Text style={{fontSize:8}}>{name}</Text>
-                                <Text style={{fontSize:8}}>{`${fails} fails `}</Text>
-                            </View>
-                            <View row spread style={{
-                                backgroundColor: Colors.green40,
-                                height: 10,
-                                marginBottom: 8,
-                                width: (CARD_WIDTH * standsFraction(name))
-                            }}>
-                                <Text style={{fontSize:8}}>{` ${stands(name)} stands`}</Text>
-                                <Text style={{fontSize:8}}>{`${standsPercentage}%`}</Text>
-                            </View>
-                        </View>
-                    </View>
-                )
-            })
-        )
+      const betFraction = name => betCount(name) / roundsCount(name);
+
+
+      const betsPercentageGraphs = Object.keys(this.state.allPlayersPercentage)
+        .sort((name1, name2) => betFraction(name2) - betFraction(name1))
+        .map((name) => {
+          const fraction = betCount(name) / roundsCount(name);
+          const percentage = Number((fraction * 100).toFixed(1));
+          const fails = betCount(name) - stands(name);
+          const standsPercentage = Number((standsFraction(name) * 100).toFixed(2));
+          return (
+            <View key={name}>
+              <View row>
+                <View row spread style={{
+                  backgroundColor: '#f9f9f9',
+                  height: 20,
+                  marginBottom: 1,
+                  width: (CARD_WIDTH * (1 - fraction))
+                }}>
+                  <Text>{`${name.toUpperCase()}`}</Text>
+                  <Text>{`${betCount(name)}/${roundsCount(name)}`}</Text>
+                </View>
+                <View row center style={{
+                  backgroundColor: Colors.blue60,
+                  height: 20,
+                  marginBottom: 1,
+                  width: (CARD_WIDTH * fraction)
+                }}>
+                  <Text>{`${percentage}%`}</Text>
+                </View>
+              </View>
+            </View>
+          )
+        });
+
+      const betsStandsPercentageGraphs = Object.keys(this.state.allPlayersPercentage)
+        .sort((name1, name2) => standsFraction(name2) - standsFraction(name1))
+        .map((name) => {
+          const fraction = betCount(name) / roundsCount(name);
+          const percentage = Number((fraction * 100).toFixed(1));
+          const fails = betCount(name) - stands(name);
+          const standsPercentage = Number((standsFraction(name) * 100).toFixed(2));
+          return (
+            <View key={name}>
+              <View row>
+                <View row spread style={{
+                  backgroundColor: Colors.red40,
+                  height: 20,
+                  marginBottom: 8,
+                  width: (CARD_WIDTH * (1 - standsFraction(name)))
+                }}>
+                  <Text>{name}</Text>
+                  <Text>{`${fails} fails `}</Text>
+                </View>
+                <View row spread style={{
+                  backgroundColor: Colors.green40,
+                  height: 20,
+                  marginBottom: 8,
+                  width: (CARD_WIDTH * standsFraction(name))
+                }}>
+                  <Text>{` ${stands(name)} stands`}</Text>
+                  <Text>{`${standsPercentage}%`}</Text>
+                </View>
+              </View>
+            </View>
+          )
+        })
+
+      return (
+        <>
+          <Text style={{fontWeight: 'bold'}}>% bets</Text>
+          {betsPercentageGraphs}
+          <Text style={{fontWeight: 'bold'}}>% stands when bet</Text>
+          {betsStandsPercentageGraphs}
+          </>
+      )
     };
 
   renderRoundFails = () => {
@@ -770,7 +797,11 @@ class StatisticsScreen extends Component {
     };
 
     onInfoPress = (cardStateString) => {
-      alert(INFO_ALERTS[cardStateString]);
+      Alert.alert(
+        `${INFO_ALERTS[cardStateString].title} ${Assets.emojis.information_source}`,
+        `${INFO_ALERTS[cardStateString].message}`,
+        [{text: 'Got it', onPress: () => {}}]
+      );
     };
 
     render() {
@@ -805,7 +836,7 @@ class StatisticsScreen extends Component {
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
                           <View row>
-                            <Text text40 color={Colors.dark10}>% Round stands</Text>
+                            <Text text40 color={Colors.dark10}>% Round Stands</Text>
                             <Text text60 onPress={() => this.onInfoPress("roundStands")}>{Assets.emojis.information_source}</Text>
                           </View>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("roundStands")}>
@@ -831,7 +862,7 @@ class StatisticsScreen extends Component {
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
                           <View row>
-                            <Text text40 color={Colors.dark10}>{`Player bets(${Assets.emojis.crown})`}</Text>
+                            <Text text40 color={Colors.dark10}>{`Player Bets(${Assets.emojis.crown})`}</Text>
                             <Text text60 onPress={() => this.onInfoPress("playerBets")}>{Assets.emojis.information_source}</Text>
                           </View>
                           <Text text40 marginR-5 onPress={() => this.onArrowPress("playerBets")}>
