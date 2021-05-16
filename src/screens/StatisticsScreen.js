@@ -22,6 +22,7 @@ const INFO_ALERTS = {
   pointsPerRound: {title: "Points Per Round", message: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played."},
   playerBets: {title: "Player Bets", message: "For each player:\nWhite:#bets out of #rounds he played\nBlue:% of bets out the round he played\nRed:#fails\nGreen:#stands and % of stands out of games that he bet.\nList is sorted by the % of stands out of the player bets"},
   sequences: {title: "Sequences", message: "Bonuses count: how many times player achieve bonus(sequence of 5 stands).\nMax sequence: longest sequence of stands in a game.\nMax accumulate sequence: longest sequence of stands in more then one game"},
+  redGames: {title: "Red Games", message: "Games that finished with score below zero for each player"},
   upDownRatio: {title: "title", message: "TODO"},
   biddingsDistribution: {title: "title", message: "TODO"},
   trumpsDistribution: {title: "title", message: "TODO"},
@@ -43,6 +44,24 @@ class StatisticsScreen extends Component {
             allGames: [],
             roundsHistory: this.props.roundsHistory,
             allPlayersPercentage: {},
+/*
+  Amir: {
+    betAndStandsCount: 120
+    betCount: 224
+    bonusesCount: 28
+    curSequenceAccumulate: 0
+    failCount: 495
+    gamesCount: 97
+    gamesRanking: [15, 19, 28, 35]
+    maxSequence: 10
+    maxSequenceAccumulate: 16
+    rankingHistoryList: undefined
+    standsCount: 695
+    sumOfPoints: 9885
+    redGamesCount: 2
+  },
+  Dan: {}
+*/
             biddingsDistribution: [],
             standsPerBidding: [],
             upsCount: 0,
@@ -60,6 +79,7 @@ class StatisticsScreen extends Component {
               pointsPerRound: false,
               playerBets: false,
               sequences: false,
+              redGames: false,
               upDownRatio: false,
               roundFails: false,
               biddingsDistribution: false,
@@ -148,6 +168,7 @@ class StatisticsScreen extends Component {
                                 betCount: 0,
                                 betAndStandsCount: 0,
                                 gamesCount: 0,
+                                redGamesCount: 0,
                                 gamesRanking: [0,0,0,0],
                                 sumOfPoints: 0,
                                 bonusesCount: 0,
@@ -165,6 +186,9 @@ class StatisticsScreen extends Component {
                         playerRoundsMap[game.playerNamesObj[`${location}Name`]].gamesCount++;
                         playerRoundsMap[game.playerNamesObj[`${location}Name`]].gamesRanking[index]++;
                         playerRoundsMap[game.playerNamesObj[`${location}Name`]].sumOfPoints += gameScore[location];
+                        if (gameScore[location] < 0) {
+                          playerRoundsMap[game.playerNamesObj[`${location}Name`]].redGamesCount++;
+                        }
                     }
                 );
 
@@ -771,6 +795,52 @@ class StatisticsScreen extends Component {
     )
   };
 
+  renderRedGamesGraphs = () => {
+    const maxValue = Math.max(...(Object.keys(this.state.allPlayersPercentage).map((name) => this.state.allPlayersPercentage[name].redGamesCount)));
+    const gamesCount = name => this.state.allPlayersPercentage[name].gamesCount;
+    const redGamesCount = name => this.state.allPlayersPercentage[name].redGamesCount;
+    const percentage = name => redGamesCount(name) / gamesCount(name) * 100;
+
+    return (
+      <View>
+        <Text style={{fontWeight: 'bold'}}>Games with negative score</Text>
+        {
+          Object.keys(this.state.allPlayersPercentage)
+            .sort((name1, name2) => percentage(name2) - percentage(name1))
+            .map((name) => {
+              const fractionFromMax = Math.abs(redGamesCount(name)) / maxValue;
+              return (
+                <View key={name} row>
+                  <View flex row spread style={{
+                    height: 20,
+                    marginBottom: 1,
+                    width: (CARD_WIDTH / 2)
+                  }}>
+                    <Text>{`${name.toUpperCase()}`}</Text>
+                    <Text  style={{fontWeight: 'bold'}}>{redGamesCount(name)}</Text>
+                    <Text>{`${percentage(name).toFixed(1)}%`}</Text>
+                  </View>
+                  <View flex style={{
+                    height: 20,
+                    marginBottom: 1,
+                    width: (CARD_WIDTH / 2)
+                  }}>
+                    <View center style={{
+                      backgroundColor: Colors.red40,
+                      height: 20,
+                      width: (CARD_WIDTH/2 * fractionFromMax) || 0.1
+                    }}>
+                    </View>
+                  </View>
+                </View>
+              )
+            })
+
+        }
+      </View>
+    )
+  };
+
   renderBiddingsDistributionGraphs = () => {
         const biddingsDistribution = this.calcBiddingsDistribution();
         const allRoundsCount = biddingsDistribution.reduce((a,b) => a + b, 0);
@@ -973,6 +1043,19 @@ class StatisticsScreen extends Component {
                           </Text>
                         </View>
                         {this.state.showCards.upDownRatio && this.renderUpDownRatio()}
+                      </Card>
+
+                      <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>{`Red Games(${Assets.emojis.see_no_evil})`}</Text>
+                            <Text text60 onPress={() => this.onInfoPress("redGames")}>{Assets.emojis.information_source}</Text>
+                          </View>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("redGames")}>
+                            {this.state.showCards.redGames ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
+                        </View>
+                        {this.state.showCards.redGames && this.renderRedGamesGraphs()}
                       </Card>
 
                       <Card  width={CARD_WIDTH} flex style={{marginBottom: 15}}>
