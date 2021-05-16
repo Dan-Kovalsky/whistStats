@@ -1,12 +1,14 @@
 import React, {Component} from 'react';
 import {FlatList, ScrollView, Dimensions, Alert} from 'react-native';
-import {Text, View, Colors, Assets, Card, LoaderScreen, StateScreen} from 'react-native-ui-lib';
+import {Text, View, Colors, Assets, Card, LoaderScreen, StateScreen, TextField} from 'react-native-ui-lib';
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
 import AsyncStorage from '@react-native-community/async-storage';
 import {cloneDeep} from "lodash"
 import {BONUS_POINTS_FOR_5_ROW} from "../constants/Points";
+import _ from "lodash"
+import {BID_BTN_COLORS as clr} from "../constants/styles/Colors";
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 const SCREEN_WIDTH = Dimensions.get('screen').width;
@@ -15,6 +17,7 @@ const CUBE_WIDTH = CARD_WIDTH / 10;
 
 const INFO_ALERTS = {
   playersRanking: {title: "Players Ranking", message: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round."},
+  rankingHistory: {title: "Players Ranking History", message: "TODO"},
   roundStands: {title: "% Round Stands", message: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played."},
   pointsPerRound: {title: "Points Per Round", message: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played."},
   playerBets: {title: "Player Bets", message: "For each player:\nWhite:#bets out of #rounds he played\nBlue:% of bets out the round he played\nRed:#fails\nGreen:#stands and % of stands out of games that he bet.\nList is sorted by the % of stands out of the player bets"},
@@ -22,7 +25,7 @@ const INFO_ALERTS = {
   upDownRatio: {title: "title", message: "TODO"},
   biddingsDistribution: {title: "title", message: "TODO"},
   trumpsDistribution: {title: "title", message: "TODO"},
-}
+};
 
 class StatisticsScreen extends Component {
 
@@ -52,6 +55,7 @@ class StatisticsScreen extends Component {
             },
             showCards: {
               playersRanking: true,
+              rankingHistory: false,
               roundStands: false,
               pointsPerRound: false,
               playerBets: false,
@@ -60,7 +64,8 @@ class StatisticsScreen extends Component {
               roundFails: false,
               biddingsDistribution: false,
               trumpsDistribution: false,
-            }
+            },
+            rankingHistoryChosenWeek: 1
 
         }
     }
@@ -109,9 +114,6 @@ class StatisticsScreen extends Component {
             const roundsCount = Object.keys(this.state.trumpsDistribution).reduce((sum,key) => sum + this.state.trumpsDistribution[key], 0);
             Navigation.mergeOptions(this.props.componentId, {
               topBar: {
-                // title: {
-                //   text: `Statistics (${this.state.allGames.length} G, ${roundsCount} R)`
-                // },
                 subtitle: {
                   text: `${this.state.allGames.length} Games, ${roundsCount} Rounds`
                 }
@@ -120,10 +122,6 @@ class StatisticsScreen extends Component {
           });
       })
     }
-
-    componentWillMount() {
-    }
-
 
     getAllGamesFromStorage = async () => {
         const allGamesString = await AsyncStorage.getItem(ALL_GAMES_KEY);
@@ -135,6 +133,7 @@ class StatisticsScreen extends Component {
         }
     };
 
+    roundsMapHistory = [];
     calcStandsPercentage = () => {
         let playerRoundsMap = {};
         this.state.allGames.forEach(
@@ -154,7 +153,8 @@ class StatisticsScreen extends Component {
                                 bonusesCount: 0,
                                 maxSequence: 0,
                                 maxSequenceAccumulate: 0,
-                                curSequenceAccumulate: 0
+                                curSequenceAccumulate: 0,
+                                rankingHistoryList: undefined
                             }
                     }
                 });
@@ -247,6 +247,7 @@ class StatisticsScreen extends Component {
                       }
                     }
                 )
+                this.roundsMapHistory.push(_.cloneDeep(playerRoundsMap))
             }
         );
         return playerRoundsMap
@@ -381,8 +382,8 @@ class StatisticsScreen extends Component {
         return (
             <View row style={{height: 30}}>
                 <Text style={{width: CUBE_WIDTH *3}}> </Text>
-                <Text style={{width: CUBE_WIDTH}}> G</Text>
-                <Text style={{width: CUBE_WIDTH *2}}>PTS</Text>
+                <Text style={{width: CUBE_WIDTH  *1.5}}>PTS</Text>
+                <Text style={{width: CUBE_WIDTH *1.5}}> G</Text>
                 <Text style={{width: CUBE_WIDTH}}>W</Text>
                 <Text style={{width: CUBE_WIDTH}}>2nd</Text>
                 <Text style={{width: CUBE_WIDTH}}> 3rd</Text>
@@ -391,17 +392,32 @@ class StatisticsScreen extends Component {
         )
     };
 
-    renderPlayerRankingLine = item => {
-        const rankingPoints = this.calcPoints(this.state.allPlayersPercentage[item.item].gamesRanking);
+    renderPlayerRankingLine = ({item, index}) => {
+        const rankingPoints = this.calcPoints(this.state.allPlayersPercentage[item].gamesRanking);
         return (
             <View row style={{height: 20}}>
-                <Text style={{width: CUBE_WIDTH *3}}>{` ${item.index + 1}.  ${item.item.toUpperCase()}`}</Text>
-                <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item.item].gamesCount}`}</Text>
-                <Text style={{width: CUBE_WIDTH *2, fontWeight: 'bold'}}>{`  ${rankingPoints >= 0 ?" ":""}${rankingPoints}`}</Text>
-                <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item.item].gamesRanking[0]}`}</Text>
-                <Text style={{width: CUBE_WIDTH}}>{`  ${this.state.allPlayersPercentage[item.item].gamesRanking[1]}`}</Text>
-                <Text style={{width: CUBE_WIDTH}}>{`  ${this.state.allPlayersPercentage[item.item].gamesRanking[2]}`}</Text>
-                <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item.item].gamesRanking[3]}`}</Text>
+                <Text style={{width: CUBE_WIDTH *3}}>{` ${index + 1}.  ${item.toUpperCase()}`}</Text>
+                <Text style={{width: CUBE_WIDTH *1.5, fontWeight: 'bold'}}>{`  ${rankingPoints >= 0 ?" ":""}${rankingPoints}`}</Text>
+                <Text style={{width: CUBE_WIDTH *1.5}}>{` ${this.state.allPlayersPercentage[item].gamesCount}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item].gamesRanking[0]}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{`  ${this.state.allPlayersPercentage[item].gamesRanking[1]}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{`  ${this.state.allPlayersPercentage[item].gamesRanking[2]}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{` ${this.state.allPlayersPercentage[item].gamesRanking[3]}`}</Text>
+            </View>
+        )
+    };
+
+    renderPlayerRankingLineByWeek = (name, index, weekNumber) => {
+        const rankingPoints = this.calcPoints(this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking);
+        return (
+            <View row style={{height: 20}}>
+                <Text style={{width: CUBE_WIDTH *3}}>{` ${index + 1}.  ${name.toUpperCase()}`}</Text>
+                <Text style={{width: CUBE_WIDTH *1.5, fontWeight: 'bold'}}>{`  ${rankingPoints >= 0 ?" ":""}${rankingPoints}`}</Text>
+                <Text style={{width: CUBE_WIDTH *1.5}}>{` ${this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesCount}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{` ${this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking[0]}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{`  ${this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking[1]}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{`  ${this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking[2]}`}</Text>
+                <Text style={{width: CUBE_WIDTH}}>{` ${this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking[3]}`}</Text>
             </View>
         )
     };
@@ -433,7 +449,55 @@ class StatisticsScreen extends Component {
         );
     };
 
-    renderPointsPerRoundGraphs = () => {
+  calcRankingHistory = () => {
+
+  };
+
+  renderRankingHistoryGraphs = () => {
+    const sortedData = Object.keys(this.roundsMapHistory[this.state.rankingHistoryChosenWeek])
+            .sort((name1, name2) => {
+              const score = name => this.calcPoints(this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking);
+              const gamesCount = name => this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesCount;
+              const winCount = name => this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking[0];
+              const ppr = name => this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].sumOfPoints / gamesCount(name);
+
+              return (
+                score(name2) - score(name1)
+                || gamesCount(name1) - gamesCount(name2)
+                || winCount(name2) - winCount(name1)
+                || ppr(name2) - ppr(name1)
+              )
+            });
+        return (
+            <View flex>
+              <View row style={{height: 50}}>
+
+                <Text text60>choose week: </Text>
+                <TextField
+                  centered
+                  text60
+                  style={{fontWeight: 'bold', color: "red"}}
+                  // titleColor={clr.TEXT}
+                  containerStyle={{height:40, width:25}}
+                  // placeholder={`${this.state.rankingHistoryChosenWeek}`}
+                  value={this.state.rankingHistoryChosenWeek}
+                  onChangeText={(text) => this.setState({rankingHistoryChosenWeek: text || 0})}
+                  keyboardType={"number-pad"}
+                  maxLength={3}
+                />
+              </View>
+
+              {this.renderTableTitle()}
+                <FlatList
+                    keyExtractor={(item) => item}
+                    data={sortedData}
+                    renderItem={({item, index}) => this.renderPlayerRankingLineByWeek(item, index, 3)}
+                />
+            </View>
+        );
+  };
+
+  renderPointsPerRoundGraphs = () => {
       const maxValue = Math.max(...(Object.keys(this.state.allPlayersPercentage).map((name) => Math.abs(this.state.allPlayersPercentage[name].sumOfPoints/ (this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount)))));
       const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
       const sumOfPoints = name => this.state.allPlayersPercentage[name].sumOfPoints;
@@ -502,7 +566,7 @@ class StatisticsScreen extends Component {
         )
     };
 
-    renderSequencesGraphs = () => {
+  renderSequencesGraphs = () => {
       const bonusesCount = name => this.state.allPlayersPercentage[name].bonusesCount;
       let bonusesCountMax = 0;
       const maxSequence = name => this.state.allPlayersPercentage[name].maxSequence;
@@ -580,7 +644,7 @@ class StatisticsScreen extends Component {
         )
     };
 
-    renderBetGraphs = () => {
+  renderBetGraphs = () => {
       const betCount = name => this.state.allPlayersPercentage[name].betCount;
       const roundsCount = name => this.state.allPlayersPercentage[name].standsCount + this.state.allPlayersPercentage[name].failCount;
       const stands = name => this.state.allPlayersPercentage[name].betAndStandsCount;
@@ -707,7 +771,7 @@ class StatisticsScreen extends Component {
     )
   };
 
-    renderBiddingsDistributionGraphs = () => {
+  renderBiddingsDistributionGraphs = () => {
         const biddingsDistribution = this.calcBiddingsDistribution();
         const allRoundsCount = biddingsDistribution.reduce((a,b) => a + b, 0);
         const maxValue = Math.max(...biddingsDistribution);
@@ -763,7 +827,7 @@ class StatisticsScreen extends Component {
         )
     };
 
-    renderTrumpsDistributionGraphs = () => {
+  renderTrumpsDistributionGraphs = () => {
         // if (! this.state.trumpsDistribution) return
         const roundsCount = Object.keys(this.state.trumpsDistribution).reduce((sum,key) => sum + this.state.trumpsDistribution[key], 0);
         const maxValue = Math.max(...Object.keys(this.state.trumpsDistribution).map(
@@ -790,13 +854,13 @@ class StatisticsScreen extends Component {
         )
     };
 
-    onArrowPress = (cardStateString) => {
+  onArrowPress = (cardStateString) => {
       const showCards = cloneDeep(this.state.showCards);
       showCards[cardStateString] = !showCards[cardStateString];
       this.setState({showCards})
     };
 
-    onInfoPress = (cardStateString) => {
+  onInfoPress = (cardStateString) => {
       Alert.alert(
         `${INFO_ALERTS[cardStateString].title} ${Assets.emojis.information_source}`,
         `${INFO_ALERTS[cardStateString].message}`,
@@ -804,7 +868,7 @@ class StatisticsScreen extends Component {
       );
     };
 
-    render() {
+  render() {
         if (this.state.isGamesDataEmpty) {
             return (
                 <StateScreen
@@ -820,6 +884,7 @@ class StatisticsScreen extends Component {
                 <ScrollView style>
                     <Text/>
                     <View center>
+
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
                         <View spread row>
                           <View row>
@@ -831,6 +896,19 @@ class StatisticsScreen extends Component {
                           </Text>
                         </View>
                         {this.state.showCards.playersRanking && this.renderPlayersRankingGraphs()}
+                      </Card>
+
+                      <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>Ranking History</Text>
+                            <Text text60 onPress={() => this.onInfoPress("rankingHistory")}>{Assets.emojis.information_source}</Text>
+                          </View>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("rankingHistory")}>
+                            {this.state.showCards.rankingHistory ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
+                        </View>
+                        {this.state.showCards.rankingHistory && this.renderRankingHistoryGraphs()}
                       </Card>
 
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
