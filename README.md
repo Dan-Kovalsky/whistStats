@@ -8,3 +8,8 @@ Record results of Whist. and fetch statistics.
 
 connect android device or emulator and:
 `react-native run-android`
+
+save changes on the device:
+- disable hot reloading. 
+- close the app.
+- disconnect the device.

@@ -17,6 +17,7 @@ const CUBE_WIDTH = CARD_WIDTH / 10;
 
 const INFO_ALERTS = {
   playersRanking: {title: "Players Ranking", message: "This is the main table of the league.\nOn each game winner get 4 points, 2nd get 1 point, 3rd loses 1 point and loser loses 4 points\nin case of draw, the player who played fewer games will win. next tie break is the number of wins. next tie break is points per round."},
+  weeksOnPodium: {title: "Weeks on podium", message: "summary of playerRanking table - podiums of all weeks history.\nsorted by points (gold*3 + silver*2 + bronze*1).\nFor each player the graph represents fraction of each position according to the player with the max weeks on podium"},
   rankingHistory: {title: "Players Ranking History", message: "TODO"},
   roundStands: {title: "% Round Stands", message: "For each player you can see the percentage of stands in all of the rounds he played.\nAlso the number of rounds he stands out of the number of rounds he played."},
   pointsPerRound: {title: "Points Per Round", message: "For each player you can see the average points per round that he played.\nAlso the sum of all af his points out of the number of the number of rounds that he played."},
@@ -74,6 +75,7 @@ class StatisticsScreen extends Component {
             },
             showCards: {
               playersRanking: true,
+              weeksOnPodium: false,
               rankingHistory: false,
               roundStands: false,
               pointsPerRound: false,
@@ -125,7 +127,7 @@ class StatisticsScreen extends Component {
     componentDidMount() {
       this.getAllGamesFromStorage().then(() => {
         this.setState({
-            allPlayersPercentage: this.calcStandsPercentage(),
+            allPlayersPercentage: this.calcPlayerDictionary(),
             standsPerBidding: this.calcStandsPerBidding(),
             trumpsDistribution: this.calcTrumpsDistribution()
           },
@@ -154,7 +156,7 @@ class StatisticsScreen extends Component {
     };
 
     roundsMapHistory = [];
-    calcStandsPercentage = () => {
+    calcPlayerDictionary = () => {
         let playerRoundsMap = {};
         this.state.allGames.forEach(
             game => {
@@ -170,6 +172,7 @@ class StatisticsScreen extends Component {
                                 gamesCount: 0,
                                 redGamesCount: 0,
                                 gamesRanking: [0,0,0,0],
+                                weeksOnPodium: [0,0,0], //this is count of weeks that the player was [first,second,third] on the overall board
                                 sumOfPoints: 0,
                                 bonusesCount: 0,
                                 maxSequence: 0,
@@ -191,6 +194,7 @@ class StatisticsScreen extends Component {
                         }
                     }
                 );
+
 
                 game.roundsHistory.forEach(
                     round => {
@@ -271,7 +275,15 @@ class StatisticsScreen extends Component {
                       }
                     }
                 )
-                this.roundsMapHistory.push(_.cloneDeep(playerRoundsMap))
+
+                // weeksOnPodium - increment data for the first three after this week
+                const sortedRanking = this.sortRankingPointsOfSpecificWeek(playerRoundsMap);
+                const leaderName = sortedRanking[0], secondName = sortedRanking[1], thirdName = sortedRanking[2];
+                playerRoundsMap[leaderName].weeksOnPodium[0] ++
+                playerRoundsMap[secondName].weeksOnPodium[1] ++
+                playerRoundsMap[thirdName].weeksOnPodium[2] ++
+
+              this.roundsMapHistory.push(_.cloneDeep(playerRoundsMap))
             }
         );
         return playerRoundsMap
@@ -402,6 +414,24 @@ class StatisticsScreen extends Component {
         )
     };
 
+    sortRankingPointsOfSpecificWeek = (playersPercentageObject) => {
+      return Object.keys(playersPercentageObject)
+        .sort((name1, name2) => {
+          const score = name => this.calcPoints(playersPercentageObject[name].gamesRanking);
+          const gamesCount = name => playersPercentageObject[name].gamesCount;
+          const winCount = name => playersPercentageObject[name].gamesRanking[0];
+          const ppr = name => playersPercentageObject[name].sumOfPoints / gamesCount(name);
+
+          return (
+            score(name2) - score(name1)
+            || gamesCount(name1) - gamesCount(name2)
+            || winCount(name2) - winCount(name1)
+            || ppr(name2) - ppr(name1)
+          )
+        });
+
+    }
+
     renderTableTitle = () => {
         return (
             <View row style={{height: 30}}>
@@ -447,51 +477,68 @@ class StatisticsScreen extends Component {
     };
 
     renderPlayersRankingGraphs = () => {
-        const sortedData = Object.keys(this.state.allPlayersPercentage)
-            .sort((name1, name2) => {
-              const score = name => this.calcPoints(this.state.allPlayersPercentage[name].gamesRanking);
-              const gamesCount = name => this.state.allPlayersPercentage[name].gamesCount;
-              const winCount = name => this.state.allPlayersPercentage[name].gamesRanking[0];
-              const ppr = name => this.state.allPlayersPercentage[name].sumOfPoints / gamesCount(name);
-
-              return (
-                score(name2) - score(name1)
-                || gamesCount(name1) - gamesCount(name2)
-                || winCount(name2) - winCount(name1)
-                || ppr(name2) - ppr(name1)
-              )
-            });
+        const sortedRanking = this.sortRankingPointsOfSpecificWeek(this.state.allPlayersPercentage)
         return (
             <View flex>
                 {this.renderTableTitle()}
                 <FlatList
                     keyExtractor={(item) => item}
-                    data={sortedData}
+                    data={sortedRanking}
                     renderItem={this.renderPlayerRankingLine}
                 />
             </View>
         );
     };
 
-  calcRankingHistory = () => {
-
+  renderWeeksOnPodiumGraphs = () => {
+    const weeksOnPodiumArray = name => this.state.allPlayersPercentage[name].weeksOnPodium;
+    const weeksOnPodiumCount = name => _.sum(this.state.allPlayersPercentage[name].weeksOnPodium);
+    const totalPoints = name =>
+      weeksOnPodiumArray(name)[0] * 3 +
+      weeksOnPodiumArray(name)[1] * 2 +
+      weeksOnPodiumArray(name)[2] * 1
+    const maxWeeksOnPodiumCount = Math.max(...(Object.keys(this.state.allPlayersPercentage).map((name) => weeksOnPodiumCount(name))));
+    return (Object.keys(this.state.allPlayersPercentage)
+        .sort((name1, name2) => totalPoints(name2) - totalPoints(name1))
+        .map((name) => {
+          const goldFractionFromMax = weeksOnPodiumArray(name)[0] / maxWeeksOnPodiumCount;
+          const silverFractionFromMax = weeksOnPodiumArray(name)[1] / maxWeeksOnPodiumCount;
+          const bronzeFractionFromMax = weeksOnPodiumArray(name)[2] / maxWeeksOnPodiumCount;
+            return (
+              <View key={name}>
+                <Text>
+                  <Text>{`${name}: `}</Text>
+                  <Text style={{fontWeight: 'bold'}}>{`${weeksOnPodiumCount(name)}`}</Text>
+                  <Text>{` weeks(`}</Text>
+                  <Text style={{color: "gold"}}>{`${weeksOnPodiumArray(name)[0]}`}</Text>
+                  <Text>{`,`}</Text>
+                  <Text style={{color: "silver"}}>{`${weeksOnPodiumArray(name)[1]}`}</Text>
+                  <Text>{`,`}</Text>
+                  <Text style={{color: "#CD7F32"}}>{`${weeksOnPodiumArray(name)[2]}`}</Text>
+                  <Text>{`).   ${totalPoints(name)} points`}</Text>
+                </Text>
+                <View row style={{height: 20, marginBottom: 1, borderBottomWidth:0.5, borderBottomColor:"black"}}>
+                  <View style={{
+                    backgroundColor: "gold",
+                    width: (CARD_WIDTH * goldFractionFromMax)
+                  }}/>
+                  <View style={{
+                    backgroundColor: "silver",
+                    width: (CARD_WIDTH * silverFractionFromMax)
+                  }}/>
+                  <View style={{
+                    backgroundColor: "#CD7F32",
+                    width: (CARD_WIDTH * bronzeFractionFromMax)
+                  }}/>
+                </View>
+              </View>
+            )
+        })
+    )
   };
 
   renderRankingHistoryGraphs = () => {
-    const sortedData = Object.keys(this.roundsMapHistory[this.state.rankingHistoryChosenWeek])
-            .sort((name1, name2) => {
-              const score = name => this.calcPoints(this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking);
-              const gamesCount = name => this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesCount;
-              const winCount = name => this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].gamesRanking[0];
-              const ppr = name => this.roundsMapHistory[this.state.rankingHistoryChosenWeek][name].sumOfPoints / gamesCount(name);
-
-              return (
-                score(name2) - score(name1)
-                || gamesCount(name1) - gamesCount(name2)
-                || winCount(name2) - winCount(name1)
-                || ppr(name2) - ppr(name1)
-              )
-            });
+    const sortedRanking = this.sortRankingPointsOfSpecificWeek(this.roundsMapHistory[this.state.rankingHistoryChosenWeek]);
         return (
             <View flex>
               <View row style={{height: 50}}>
@@ -514,7 +561,7 @@ class StatisticsScreen extends Component {
               {this.renderTableTitle()}
                 <FlatList
                     keyExtractor={(item) => item}
-                    data={sortedData}
+                    data={sortedRanking}
                     renderItem={({item, index}) => this.renderPlayerRankingLineByWeek(item, index, 3)}
                 />
             </View>
@@ -835,7 +882,6 @@ class StatisticsScreen extends Component {
                 </View>
               )
             })
-
         }
       </View>
     )
@@ -966,6 +1012,19 @@ class StatisticsScreen extends Component {
                           </Text>
                         </View>
                         {this.state.showCards.playersRanking && this.renderPlayersRankingGraphs()}
+                      </Card>
+
+                      <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
+                        <View spread row>
+                          <View row>
+                            <Text text40 color={Colors.dark10}>Weeks on Podium</Text>
+                            <Text text60 onPress={() => this.onInfoPress("weeksOnPodium")}>{Assets.emojis.information_source}</Text>
+                          </View>
+                          <Text text40 marginR-5 onPress={() => this.onArrowPress("weeksOnPodium")}>
+                            {this.state.showCards.weeksOnPodium ? Assets.emojis.arrow_up_small : Assets.emojis.arrow_down_small}
+                          </Text>
+                        </View>
+                        {this.state.showCards.weeksOnPodium && this.renderWeeksOnPodiumGraphs()}
                       </Card>
 
                       <Card width={CARD_WIDTH} flex style={{marginBottom: 15}}>
