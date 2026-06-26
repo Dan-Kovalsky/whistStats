@@ -2,6 +2,7 @@
  * @format
  */
 
+import 'react-native-gesture-handler';
 import { Navigation } from "react-native-navigation";
 import {registerScreens} from './src/screens.js';
 
