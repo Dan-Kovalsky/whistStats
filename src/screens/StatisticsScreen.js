@@ -4,7 +4,7 @@ import {Text, View, Colors, Assets, Card, LoaderScreen, StateScreen, TextField} 
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {cloneDeep} from "lodash"
 import {BONUS_POINTS_FOR_5_ROW} from "../constants/Points";
 import _ from "lodash"

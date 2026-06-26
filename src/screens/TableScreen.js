@@ -9,7 +9,7 @@ import {connect} from 'remx';
 import {whistStore} from '../stores/allGamesStore'
 import * as allGamesActions from './../actions/allGamesActions'
 import {TABLE_SCREEN_COLORS as clr} from "../constants/styles/Colors";
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ALL_GAMES_KEY = '@WhistStats:allGamesHistory';
 

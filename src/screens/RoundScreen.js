@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
 import ShapeInput from '../components/bidding/ShapeInput'
 import RoundTrump from '../components/results/RoundTrump'
-import KeepAwake from 'react-native-keep-awake';
+import KeepAwake from '@sayem314/react-native-keep-awake';
 
 import BiddingComponent from "../components/bidding/BiddingComponent";
 import ResultsComponent from "../components/results/ResultsComponent";

@@ -4,7 +4,7 @@ import {Text, View, Assets, TouchableOpacity, StateScreen} from 'react-native-ui
 import {whistStore} from "../stores/allGamesStore";
 import {connect} from 'remx';
 import {Navigation} from "react-native-navigation";
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MY_GAMES_SCREEN_COLORS as clr} from "../constants/styles/Colors";
 import {reverse} from "lodash";
 

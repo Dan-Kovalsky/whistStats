@@ -6,7 +6,7 @@ import NameInput from './../components/NameInput'
 
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {NEW_GAME_SCREEN_BG} from "../constants/styles/Colors";
 
 import {whistStore} from "../stores/allGamesStore";
@@ -65,8 +65,11 @@ class NewGameScreen extends Component {
             .then(name => {
                 this.setState({names: {...this.state.names, southName: name}})
             });
-        this.loadOptionalNamesFromStorage().then(() => {
-            if (this.state.optionalNamesList.length < 4) {
+        this.loadOptionalNamesFromStorage().then((optionalNames) => {
+            // Use the freshly loaded list, not this.state (which is still stale
+            // right after setState) — otherwise the onboarding tour shows even
+            // when the user already has names saved.
+            if (optionalNames.length < 4) {
                 setTimeout(() => {
                     this.showHighlight();
                 }, 500);
@@ -86,7 +89,7 @@ class NewGameScreen extends Component {
             optionalNames = JSON.parse(optionalNamesListStr)
         }
         this.setState({optionalNamesList: optionalNames})
-
+        return optionalNames;
     };
 
     saveNamesToStorage = (optionalNames) => {
